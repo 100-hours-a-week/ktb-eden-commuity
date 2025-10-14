@@ -1,0 +1,8 @@
+spring:
+  jwt:
+    issuer: restapi-subject
+    access-exp-ms: 1800000 # 30분
+    refresh-exp-ms: 1209600000 # 2주
+
+  jackson:
+    property-naming-strategy: SNAKE_CASE
