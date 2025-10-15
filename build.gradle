@@ -24,24 +24,16 @@ repositories {
 	mavenCentral()
 }
 
-ext {
-    set('jacksonVer', "2.17.2")
-}
-
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // 비밀번호 암호화를 위해 일부분만..
     implementation 'org.springframework.security:spring-security-crypto:6.4.4'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
-
-    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.2'                                // DataType Converter
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVer}"                  // Jackson Data Binding
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVer}"     // Jackson DatabindFormat Yaml
-
 
     compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
