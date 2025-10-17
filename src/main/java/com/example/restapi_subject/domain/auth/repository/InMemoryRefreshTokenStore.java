@@ -1,0 +1,32 @@
+package com.example.restapi_subject.domain.auth.repository;
+
+import org.springframework.stereotype.Repository;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+@Repository
+public class InMemoryRefreshTokenStore {
+    private final Map<Long, String> latestRtByUser = new ConcurrentHashMap<>();
+
+    public void save(Long userId, String refreshToken) {
+        latestRtByUser.put(userId, refreshToken);
+    }
+
+    public Optional<String> get(Long userId) {
+        return Optional.ofNullable(latestRtByUser.get(userId));
+    }
+
+    public boolean compareAndSet(Long userId, String expected, String newValue) {
+        return latestRtByUser.replace(userId, expected, newValue);
+    }
+
+    public boolean compareAndDelete(Long userId, String expected) {
+        return latestRtByUser.remove(userId, expected);
+    }
+
+    public void delete(Long userId) {
+        latestRtByUser.remove(userId);
+    }
+}
