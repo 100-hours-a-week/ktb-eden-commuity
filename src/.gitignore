@@ -1,10 +1,15 @@
-### OS / IDE
-.DS_Store
+# --- OS / IDE ---
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/Thumbs.db
+**/Desktop.ini
+
 *.iml
 .idea/
 .vscode/
 
-### Java / Gradle / Maven
+# --- Java / Gradle / Maven ---
 target/
 build/
 out/
@@ -14,25 +19,19 @@ out/
 **/*.jar
 **/*.war
 
-### Android
-/.gradle/
+# --- Android ---
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-captures/
-.externalNativeBuild/
+/.gradle/
 .cxx/
+.externalNativeBuild/
+captures/
 *.apk
 *.aab
 
-### Node (있다면)
+# --- Node ---
 node_modules/
 
-### Others
+# --- Archives ---
 *.zip
 *.tar
 *.tar.gz
