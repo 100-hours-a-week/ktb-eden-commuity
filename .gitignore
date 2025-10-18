@@ -1,0 +1,15 @@
+# OS
+**/.DS_Store
+**/.DS_STORE
+
+# IDE
+*.iml
+.idea/
+.vscode/
+
+# Gradle/빌드
+.gradle/
+build/
+out/
+target/
+**/*.class
