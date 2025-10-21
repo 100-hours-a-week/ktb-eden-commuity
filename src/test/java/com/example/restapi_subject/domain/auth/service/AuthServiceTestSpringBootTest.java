@@ -15,7 +15,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-class AuthServiceTest {
+class AuthServiceTestSpringBootTest {
 
     @Autowired
     private InMemoryUserRepository userRepository;
@@ -38,6 +38,7 @@ class AuthServiceTest {
                 "eden",
                 "https://img"
         );
+
 
         // when
         Long id = authService.signUp(dto);
