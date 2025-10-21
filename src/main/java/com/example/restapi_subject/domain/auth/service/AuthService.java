@@ -4,7 +4,7 @@ import com.example.restapi_subject.domain.auth.dto.AuthReq;
 import com.example.restapi_subject.domain.auth.dto.AuthRes;
 import com.example.restapi_subject.domain.auth.repository.InMemoryRefreshTokenStore;
 import com.example.restapi_subject.domain.user.domain.User;
-import com.example.restapi_subject.domain.user.repository.InMemoryUserRepository;
+import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.JwtUtil;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final InMemoryUserRepository userRepository;
+    private final UserRepository userRepository;
     private final PasswordUtil passwordUtil;
     private final JwtUtil jwtUtil;
     private final InMemoryRefreshTokenStore refreshTokenStore;

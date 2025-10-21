@@ -4,7 +4,7 @@ import com.example.restapi_subject.domain.auth.repository.InMemoryRefreshTokenSt
 import com.example.restapi_subject.domain.user.domain.User;
 import com.example.restapi_subject.domain.user.dto.UserReq;
 import com.example.restapi_subject.domain.user.dto.UserRes;
-import com.example.restapi_subject.domain.user.repository.InMemoryUserRepository;
+import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.PasswordUtil;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final InMemoryUserRepository userRepository;
+    private final UserRepository userRepository;
     private final PasswordUtil passwordUtil;
     private final InMemoryRefreshTokenStore refreshTokenStore;
 

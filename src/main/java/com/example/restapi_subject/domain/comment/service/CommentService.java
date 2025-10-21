@@ -1,9 +1,11 @@
 package com.example.restapi_subject.domain.comment.service;
 
+import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.dto.CommentReq;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
 import com.example.restapi_subject.domain.board.repository.InMemoryBoardRepository;
+import com.example.restapi_subject.domain.comment.repository.CommentRepository;
 import com.example.restapi_subject.domain.comment.repository.InMemoryCommentRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
@@ -16,8 +18,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CommentService {
 
-    private final InMemoryCommentRepository commentRepository;
-    private final InMemoryBoardRepository boardRepository;
+    private final CommentRepository commentRepository;
+    private final BoardRepository boardRepository;
 
     public CommentRes.CreateIdDto create(Long boardId, Long authorId, CommentReq.CreateDto dto) {
         ensureBoardExists(boardId);

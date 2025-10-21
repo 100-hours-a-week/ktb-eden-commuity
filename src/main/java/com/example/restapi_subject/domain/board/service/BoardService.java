@@ -3,6 +3,7 @@ package com.example.restapi_subject.domain.board.service;
 import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.dto.BoardReq;
 import com.example.restapi_subject.domain.board.dto.BoardRes;
+import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.board.repository.InMemoryBoardRepository;
 import com.example.restapi_subject.domain.board.repository.InMemoryLikeRepository;
 import com.example.restapi_subject.global.common.dto.PageCursor;
@@ -19,7 +20,7 @@ public class BoardService {
 
     // TODO : 페이지네이션 유틸화 고려
 
-    private final InMemoryBoardRepository boardRepository;
+    private final BoardRepository boardRepository;
     private final InMemoryLikeRepository likeRepository;
 
     public BoardRes.CreateIdDto create(Long authorId, BoardReq.CreateDto dto) {
