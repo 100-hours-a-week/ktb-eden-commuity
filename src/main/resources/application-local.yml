@@ -6,3 +6,7 @@ spring:
 
   jackson:
     property-naming-strategy: SNAKE_CASE
+
+springdoc:
+  swagger-ui:
+    persistAuthorization: true
