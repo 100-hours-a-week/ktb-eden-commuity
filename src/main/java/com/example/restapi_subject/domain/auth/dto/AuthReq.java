@@ -1,5 +1,6 @@
 package com.example.restapi_subject.domain.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
 public record AuthReq() {
@@ -11,6 +12,7 @@ public record AuthReq() {
                     regexp = "^$|^[A-Za-z]+@[A-Za-z]+\\.[A-Za-z]{2,10}$",
                     message = "email_invalid"
             )
+            @Schema(description = "이메일", example = "ok@test.com")
             String email,
 
             @NotBlank(message = "password_required")
@@ -19,17 +21,21 @@ public record AuthReq() {
                     message = "password_rule_violation"
                     // 대문자,소문자,숫자,특수문자 각각 최소 1개씩, 8자 이상 20자 이하
             )
+            @Schema(description = "비밀번호", example = "Test1234!")
             String password,
 
             @NotBlank(message = "passwordConfirm_required")
+            @Schema(description = "비밀번호 확인", example = "Test1234!")
             String passwordConfirm,
 
             @NotBlank(message = "nickname_required")
             @Size(max = 10, message = "nickname_max_10")
             @Pattern(regexp = "^[^\\s]+$", message = "nickname_no_space")
+            @Schema(description = "닉네임", example = "eden")
             String nickname,
 
             @NotBlank(message = "profileImage_required")
+            @Schema(description = "닉네임", example = "https://picsum.photos/seed/ok/200/200")
             String profileImage
     ) {
     }
@@ -42,6 +48,7 @@ public record AuthReq() {
                     regexp = "^$|^[A-Za-z]+@[A-Za-z]+\\.[A-Za-z]{2,10}$",
                     message = "email_invalid"
             )
+            @Schema(description = "이메일", example = "ok@test.com")
             String email,
             @NotBlank(message = "password_required")
             @Pattern(
@@ -49,6 +56,7 @@ public record AuthReq() {
                     message = "password_rule_violation"
                     // 대문자,소문자,숫자,특수문자 각각 최소 1개씩, 8자 이상 20자 이하
             )
+            @Schema(description = "비밀번호", example = "Test1234!")
             String password
     ){
     }
