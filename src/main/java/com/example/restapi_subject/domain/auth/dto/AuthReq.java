@@ -60,4 +60,9 @@ public record AuthReq() {
             String password
     ){
     }
+
+    public record DeleteRefreshTokenDto(
+            @NotBlank(message = "password_required")
+            String password
+    ){}
 }

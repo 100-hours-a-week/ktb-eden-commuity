@@ -1,6 +1,8 @@
 package com.example.restapi_subject.domain.user.service;
 
+import com.example.restapi_subject.domain.auth.dto.AuthReq;
 import com.example.restapi_subject.domain.auth.repository.InMemoryRefreshTokenStore;
+import com.example.restapi_subject.domain.auth.service.AuthService;
 import com.example.restapi_subject.domain.user.domain.User;
 import com.example.restapi_subject.domain.user.dto.UserReq;
 import com.example.restapi_subject.domain.user.dto.UserRes;
@@ -18,6 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordUtil passwordUtil;
     private final InMemoryRefreshTokenStore refreshTokenStore;
+    private final AuthService authService;
 
     public UserRes.UserDto me(Long userId) {
         User u = getUserOrThrow(userId);
@@ -46,8 +49,9 @@ public class UserService {
         User user = getUserOrThrow(userId);
         checkPasswordOrThrow(dto, user);
 
+        AuthReq.DeleteRefreshTokenDto deleteRefreshTokenDto = new AuthReq.DeleteRefreshTokenDto(dto.password());
+        authService.deleteRefreshToken(userId, deleteRefreshTokenDto);
         userRepository.delete(userId);
-        refreshTokenStore.delete(userId);
     }
 
     /**

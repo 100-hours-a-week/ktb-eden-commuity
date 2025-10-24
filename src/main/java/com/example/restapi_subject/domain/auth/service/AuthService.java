@@ -69,12 +69,26 @@ public class AuthService {
                 .or(() -> extractFromCookies(request));
     }
 
+    public void deleteRefreshToken(Long userId, AuthReq.DeleteRefreshTokenDto dto) {
+        User user = authenticateUser(userId, dto);
+        refreshTokenStore.delete(userId);
+    }
+
     /**
      *  내부 메서드
      */
 
     private User authenticateUser(AuthReq.LoginDto dto) {
         User user = userRepository.findByEmail(dto.email())
+                .orElseThrow(() -> new CustomException(ExceptionType.USER_NOT_FOUND));
+        if (!passwordUtil.matches(dto.password(), user.getPassword())) {
+            throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
+        }
+        return user;
+    }
+
+    private User authenticateUser(Long userId, AuthReq.DeleteRefreshTokenDto dto) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionType.USER_NOT_FOUND));
         if (!passwordUtil.matches(dto.password(), user.getPassword())) {
             throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
