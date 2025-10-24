@@ -5,34 +5,83 @@ import com.example.restapi_subject.global.common.repository.BaseInMemoryReposito
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.UnaryOperator;
 
 @Slf4j
 @Repository
 public class InMemoryUserRepository extends BaseInMemoryRepository<User> implements UserRepository {
 
+    private final Map<String, Long> emailIndex = new ConcurrentHashMap<>();
+    private final Map<String, Long> nicknameIndex = new ConcurrentHashMap<>();
+
+    @Override
+    public User save(User newUser) {
+        User saved = super.save(newUser);
+        updateIndexes(saved);
+        return saved;
+    }
+
+    @Override
+    public Optional<User> update(Long id, UnaryOperator<User> updater) {
+        User before = findById(id).orElse(null);
+        if (before != null) return Optional.empty();
+
+        String oldEmailKey = norm(before.getEmail());
+        String oldNicknameKey = norm(before.getNickname());
+
+        Optional<User> updatedOpt = super.update(id, updater);
+        updatedOpt.ifPresent(after -> {
+            String newEmailKey = norm(after.getEmail());
+            String newNickKey  = norm(after.getNickname());
+
+            if (!Objects.equals(oldEmailKey, newEmailKey)) {
+                if (oldEmailKey != null) emailIndex.remove(oldEmailKey);
+                if (newEmailKey != null) emailIndex.put(newEmailKey, after.getId());
+            }
+
+            if (!Objects.equals(oldNicknameKey, newNickKey)) {
+                if (oldNicknameKey != null) nicknameIndex.remove(oldNicknameKey);
+                if (newNickKey != null) nicknameIndex.put(newNickKey, after.getId());
+            }
+        });
+        return updatedOpt;
+    }
+
     @Override
     public Optional<User> findByEmail(String email) {
-        return store.values().stream()
-                .filter(user -> email.equals(user.getEmail()))
-                .findFirst();
+        Long id = emailIndex.get(norm(email));
+        if(id == null) return Optional.empty();
+        return findById(id);
     }
 
     @Override
     public Optional<User> findByNickname(String nickname) {
-        return store.values().stream()
-                .filter(user -> nickname.equals(user.getNickname()))
-                .findFirst();
+        Long id = nicknameIndex.get(nickname);
+        if(id == null) return Optional.empty();
+        return findById(id);
     }
 
     @Override
     public boolean existsByEmail(String email) {
-        return findByEmail(email).isPresent();
+        return emailIndex.containsKey(norm(email));
     }
 
     @Override
     public boolean existsByNickname(String nickname) {
-        return findByNickname(nickname).isPresent();
+        return nicknameIndex.containsKey(nickname);
+    }
+
+    @Override
+    public void delete(Long id) {
+        findById(id).ifPresent(u -> {
+            emailIndex.remove(norm(u.getEmail()));
+            nicknameIndex.remove(norm(u.getNickname()));
+        });
+        super.delete(id);
     }
 
     @Override
@@ -43,5 +92,15 @@ public class InMemoryUserRepository extends BaseInMemoryRepository<User> impleme
     @Override
     protected User assignId(User user, Long id) {
         return user.withId(id);
+    }
+
+    private void updateIndexes(User user) {
+        emailIndex.put(norm(user.getEmail()), user.getId());
+        nicknameIndex.put(norm(user.getNickname()), user.getId());
+    }
+
+    private String norm(String email) {
+        if(email == null) return null;
+        return email.toLowerCase().trim();
     }
 }
