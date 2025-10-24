@@ -2,6 +2,7 @@ package com.example.restapi_subject.domain.board.repository;
 
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,5 +27,17 @@ public class InMemoryLikeRepository {
     public boolean exists(Long boardId, Long userId) {
         Set<Long> set = likes.get(boardId);
         return set != null && set.contains(userId);
+    }
+
+    public Set<Long> findAllByUserIdAndBoardIds(List<Long> boardIds,Long userId) {
+        Set<Long> result = ConcurrentHashMap.newKeySet();
+
+        for(Long boardId : boardIds){
+            Set<Long> userIds = likes.get(boardId);
+            if(userIds != null && userIds.contains(userId)){
+                result.add(boardId);
+            }
+        }
+        return result;
     }
 }

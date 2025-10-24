@@ -4,7 +4,6 @@ import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.dto.BoardReq;
 import com.example.restapi_subject.domain.board.dto.BoardRes;
 import com.example.restapi_subject.domain.board.repository.BoardRepository;
-import com.example.restapi_subject.domain.board.repository.InMemoryBoardRepository;
 import com.example.restapi_subject.domain.board.repository.InMemoryLikeRepository;
 import com.example.restapi_subject.global.common.dto.PageCursor;
 import com.example.restapi_subject.global.error.exception.CustomException;
@@ -13,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +34,12 @@ public class BoardService {
     }
 
     public List<BoardRes.BoardDto> list(Long userIdOrNull) {
-        return boardRepository.findAll().stream()
-                .map(b -> toDto(b, userIdOrNull))
+
+        List<Board> boards = boardRepository.findAll();
+        Set<Long> likedBoardIds = getLikedBoardIds(boards, userIdOrNull);
+
+        return boards.stream()
+                .map(b -> BoardRes.BoardDto.from(b, likedBoardIds.contains(b.getId())))
                 .toList();
     }
 
@@ -47,8 +51,10 @@ public class BoardService {
 
         Long nextCursorId = rows.isEmpty() ? null : rows.get(rows.size() - 1).getId();
 
+        Set<Long> likedBoardIds = getLikedBoardIds(rows, userIdOrNull);
+
         List<BoardRes.BoardDto> content = rows.stream()
-                .map(b -> toDto(b, userIdOrNull))
+                .map(b ->  BoardRes.BoardDto.from(b, likedBoardIds.contains(b.getId())))
                 .toList();
 
         return new PageCursor<>(content, hasNext, nextCursorId);
@@ -134,5 +140,13 @@ public class BoardService {
         }
         b = boardRepository.save(b);
         return b;
+    }
+
+    private Set<Long> getLikedBoardIds(List<Board> boards, Long userIdOrNull) {
+        if(boards.isEmpty() || userIdOrNull == null) return Set.of();
+        List<Long> boardIds = boards.stream()
+                .map(Board::getId)
+                .toList();
+        return likeRepository.findAllByUserIdAndBoardIds(boardIds, userIdOrNull);
     }
 }
