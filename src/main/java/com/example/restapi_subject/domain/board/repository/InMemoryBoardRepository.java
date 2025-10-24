@@ -1,16 +1,17 @@
 package com.example.restapi_subject.domain.board.repository;
 
 import com.example.restapi_subject.domain.board.domain.Board;
-import com.example.restapi_subject.global.common.repository.BaseInMemoryRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 
 @Repository
-public class InMemoryBoardRepository extends BaseInMemoryRepository<Board> implements BoardRepository {
+public class InMemoryBoardRepository implements BoardRepository {
+
+    private final NavigableMap<Long, Board> store = new ConcurrentSkipListMap<>();
+    protected final AtomicLong sequence = new AtomicLong(0);
 
     public List<Board> findByAuthorId(Long authorId) {
         return store.values().stream()
@@ -29,26 +30,56 @@ public class InMemoryBoardRepository extends BaseInMemoryRepository<Board> imple
                 .toList();
     }
 
-    // TODO : 오프셋과 성능 동일 -> NavigableMap OR ConcurrentSkipListMap OR TreeMap 학습해서 개선하기
     @Override
     public List<Board> findAllByCursor(Long cursorId, int size) {
         if (size <= 0) size = 10;
+        NavigableMap<Long, Board> result = (cursorId == null)
+                ? store.descendingMap()
+                : store.headMap(cursorId, false).descendingMap();
 
-        return store.values().stream()
-                .sorted(Comparator.comparing(Board::getId).reversed())
-                .filter(b -> cursorId == null || b.getId() < cursorId)
+        return result.values().stream()
                 .limit(size + 1L)
                 .toList();
     }
 
     @Override
-    protected Long getId(Board board) {
-        return board.getId();
+    public Board save(Board board) {
+        if (board.getId() == null) {
+            long id = sequence.incrementAndGet();
+            board = board.withId(id);
+        }
+        store.put(board.getId(), board);
+        return board;
     }
 
     @Override
-    protected Board assignId(Board board, Long id) {
-        return board.withId(id);
+    public Optional<Board> findById(Long id) {
+        return Optional.ofNullable(store.get(id));
     }
 
+    @Override
+    public List<Board> findAll() {
+        return store.descendingMap().values()
+                .stream()
+                .toList();
+    }
+
+    @Override
+    public Optional<Board> update(Long id, UnaryOperator<Board> updater) {
+        Board after = store.compute(id, (k, cur) ->
+                cur == null ? null : updater.apply(cur)
+        );
+        return Optional.ofNullable(after);
+    }
+
+    @Override
+    public void delete(Long id) {
+        store.remove(id);
+    }
+
+    @Override
+    public void clear() {
+        store.clear();
+        sequence.set(0);
+    }
 }
