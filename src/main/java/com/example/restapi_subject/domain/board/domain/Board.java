@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -17,20 +18,21 @@ public class Board extends BaseEntity {
     private String content;
     private String image;
 
-    private int viewCount;
-    private int likeCount;
-    private int commentCount;
+    // TODO : DB 도입 시 원자적 쿼리로 개선 고려
+    private AtomicInteger viewCount;
+    private AtomicInteger likeCount;
+    private AtomicInteger commentCount;
 
     @Builder
-    private Board(Long authorId, String title, String content, String image, Integer viewCount, Integer likeCount, Integer commentCount) {
+    private Board(Long authorId, String title, String content, String image, AtomicInteger viewCount, AtomicInteger likeCount, AtomicInteger commentCount) {
         super();
         this.authorId = authorId;
         this.title = title;
         this.content = content;
         this.image = image;
-        this.viewCount = (viewCount == null ? 0 : viewCount);
-        this.likeCount = (likeCount == null ? 0 : likeCount);
-        this.commentCount = (commentCount == null ? 0 : commentCount);
+        this.viewCount = (viewCount == null ? new AtomicInteger(0) : viewCount);
+        this.likeCount = (likeCount == null ? new AtomicInteger(0) : likeCount);
+        this.commentCount = (commentCount == null ? new AtomicInteger(0) : commentCount);
     }
 
     public static Board create(Long authorId, String title, String content, String image) {
@@ -57,16 +59,16 @@ public class Board extends BaseEntity {
         copy.id = id;
         return copy;
     }
-    public void increaseView() { this.viewCount++;}
-    public void increaseLike() { this.likeCount++;}
+    public void increaseView() { this.viewCount.incrementAndGet(); }
+    public void increaseLike() { this.likeCount.incrementAndGet(); }
     public void decreaseLike() {
-        if (this.likeCount == 0) return; // 또는 예외
-        this.likeCount--;
+        if (this.likeCount.get() == 0) return; // 또는 예외
+        this.likeCount.decrementAndGet();
     }
-    public void increaseComment() { this.commentCount++;}
+    public void increaseComment() { this.commentCount.incrementAndGet(); }
     public void decreaseComment() {
-        if (this.commentCount == 0) return; // 또는 예외
-        this.commentCount--;
+        if (this.commentCount.get() == 0) return; // 또는 예외
+        this.commentCount.decrementAndGet();
     }
 
     public void changeTitle(String title) {
