@@ -11,4 +11,5 @@ public interface CrudCustomRepository<T, ID> {
     Optional<T> update(Long id, UnaryOperator<T> updater);
     void delete(ID id);
     void clear();
+    boolean existsById(ID id);
 }
