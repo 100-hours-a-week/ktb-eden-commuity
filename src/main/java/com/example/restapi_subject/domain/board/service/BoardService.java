@@ -4,7 +4,7 @@ import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.dto.BoardReq;
 import com.example.restapi_subject.domain.board.dto.BoardRes;
 import com.example.restapi_subject.domain.board.repository.BoardRepository;
-import com.example.restapi_subject.domain.board.repository.InMemoryLikeRepository;
+import com.example.restapi_subject.domain.boardlike.service.BoardLikeService;
 import com.example.restapi_subject.global.common.dto.PageCursor;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
@@ -21,50 +21,45 @@ public class BoardService {
     // TODO : 페이지네이션 유틸화 고려
 
     private final BoardRepository boardRepository;
-    private final InMemoryLikeRepository likeRepository;
+    private final BoardLikeService boardLikeService;
 
     public BoardRes.CreateIdDto create(Long authorId, BoardReq.CreateDto dto) {
         Board board = Board.create(authorId, dto.title(), dto.content(), dto.image());
         return BoardRes.CreateIdDto.of(boardRepository.save(board).getId());
     }
 
-    public BoardRes.BoardDto get(Long boardId, Long userIdOrNull) {
-        Board b = getBoardAndIncreaseViewOrThrow(boardId);
-        return toDto(b, userIdOrNull);
+    public Board getBoardAndIncreaseViewOrThrow(Long boardId) {
+        return boardRepository.update(boardId, cur -> {
+                    cur.increaseView();
+                    return cur;
+                })
+                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
     }
 
-    public List<BoardRes.BoardDto> list(Long userIdOrNull) {
-
-        List<Board> boards = boardRepository.findAll();
-        Set<Long> likedBoardIds = getLikedBoardIds(boards, userIdOrNull);
-
-        return boards.stream()
-                .map(b -> BoardRes.BoardDto.from(b, likedBoardIds.contains(b.getId())))
-                .toList();
+    public Board getBoardOrThrow(Long boardId) {
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
     }
 
-    public PageCursor<BoardRes.BoardDto> listByCursor(Long userIdOrNull, Long cursorId, int pageSize) {
-        List<Board> rows = boardRepository.findAllByCursor(cursorId, pageSize);
 
-        boolean hasNext = rows.size() > pageSize;
-        if (hasNext) rows = rows.subList(0, pageSize);
+    public PageCursor<BoardRes.BoardDto> listByCursorWithLikes(Long userId, Long cursorId, int pageSize) {
+        PageCursor<Board> boardsCursor = listByCursor(cursorId, pageSize);
+        List<Board> boards = boardsCursor.content();
+        Set<Long> likedIds = (userId == null)
+                ? Set.of() : boardLikeService.getLikedBoardIds(boards, userId);
 
-        Long nextCursorId = rows.isEmpty() ? null : rows.get(rows.size() - 1).getId();
-
-        Set<Long> likedBoardIds = getLikedBoardIds(rows, userIdOrNull);
-
-        List<BoardRes.BoardDto> content = rows.stream()
-                .map(b ->  BoardRes.BoardDto.from(b, likedBoardIds.contains(b.getId())))
+        List<BoardRes.BoardDto> dtoList = boards.stream()
+                .map(b -> BoardRes.BoardDto.from(b, likedIds.contains(b.getId())))
                 .toList();
 
-        return new PageCursor<>(content, hasNext, nextCursorId);
+        return new PageCursor<>(dtoList, boardsCursor.hasNext(), boardsCursor.nextCursorId());
     }
 
     public BoardRes.BoardDto update(Long boardId, Long requesterId, BoardReq.UpdateDto dto) {
         Board b = getBoardOrThrow(boardId);
         checkAuthorOrThrow(requesterId, b);
         b = updateBoard(dto, b);
-        return toDto(b, requesterId);
+        return BoardRes.BoardDto.from(b, false);
     }
 
     public void delete(Long boardId, Long requesterId) {
@@ -73,57 +68,30 @@ public class BoardService {
         boardRepository.delete(boardId);
     }
 
-    public BoardRes.LikeDto like(Long boardId, Long userId) {
-        Board b = getBoardOrThrow(boardId);
-
-        if (likeRepository.add(boardId, userId)) {
-            b.increaseLike();
-            boardRepository.save(b);
+    public void ensureBoardExists(Long boardId) {
+        if (!boardRepository.existsById(boardId)) {
+            throw new CustomException(ExceptionType.BOARD_NOT_FOUND);
         }
-        boolean likedNow = likeRepository.exists(boardId, userId);
-        return BoardRes.LikeDto.of(boardId, b.getLikeCount(), likedNow);
-    }
-
-    public BoardRes.LikeDto unlike(Long boardId, Long userId) {
-        Board b = getBoardOrThrow(boardId);
-
-        if (likeRepository.remove(boardId, userId)) {
-            b.decreaseLike();
-            boardRepository.save(b);
-        }
-        boolean likedNow = likeRepository.exists(boardId, userId);
-        return BoardRes.LikeDto.of(boardId, b.getLikeCount(), likedNow);
     }
 
     /**
      * 내부 메서드
      */
 
-    private BoardRes.BoardDto toDto(Board b, Long userIdOrNull) {
-        return BoardRes.BoardDto.from(b, isLikedByMe(b, userIdOrNull));
-    }
-
-    private Board getBoardOrThrow(Long boardId) {
-        return boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
-    }
-
-    private Board getBoardAndIncreaseViewOrThrow(Long boardId) {
-            return boardRepository.update(boardId, cur -> {
-                cur.increaseView();
-                return cur;
-            })
-            .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
-    }
-
-    private boolean isLikedByMe(Board b, Long userIdOrNull) {
-        return (userIdOrNull != null) && likeRepository.exists(b.getId(), userIdOrNull);
-    }
-
     private static void checkAuthorOrThrow(Long requesterId, Board b) {
         if (!b.getAuthorId().equals(requesterId)) {
             throw new CustomException(ExceptionType.ACCESS_DENIED);
         }
+    }
+
+    private PageCursor<Board> listByCursor(Long cursorId, int pageSize) {
+        List<Board> rows = boardRepository.findAllByCursor(cursorId, pageSize);
+
+        boolean hasNext = rows.size() > pageSize;
+        if (hasNext) rows = rows.subList(0, pageSize);
+        Long nextCursorId = rows.isEmpty() ? null : rows.get(rows.size() - 1).getId();
+
+        return new PageCursor<>(rows, hasNext, nextCursorId);
     }
 
     private Board updateBoard(BoardReq.UpdateDto dto, Board b) {
@@ -140,13 +108,5 @@ public class BoardService {
         }
         b = boardRepository.save(b);
         return b;
-    }
-
-    private Set<Long> getLikedBoardIds(List<Board> boards, Long userIdOrNull) {
-        if(boards.isEmpty() || userIdOrNull == null) return Set.of();
-        List<Long> boardIds = boards.stream()
-                .map(Board::getId)
-                .toList();
-        return likeRepository.findAllByUserIdAndBoardIds(boardIds, userIdOrNull);
     }
 }
