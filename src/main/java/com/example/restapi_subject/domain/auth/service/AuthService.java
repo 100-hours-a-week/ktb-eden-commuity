@@ -2,7 +2,7 @@ package com.example.restapi_subject.domain.auth.service;
 
 import com.example.restapi_subject.domain.auth.dto.AuthReq;
 import com.example.restapi_subject.domain.auth.dto.AuthRes;
-import com.example.restapi_subject.domain.auth.repository.InMemoryRefreshTokenStore;
+import com.example.restapi_subject.domain.auth.repository.RefreshTokenRepository;
 import com.example.restapi_subject.domain.user.domain.User;
 import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
@@ -25,7 +25,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordUtil passwordUtil;
     private final JwtUtil jwtUtil;
-    private final InMemoryRefreshTokenStore refreshTokenStore;
+    private final RefreshTokenRepository refreshTokenStore;
 
     public Long signUp(AuthReq.SignUpDto signUpDto) {
         validateSignUpDto(signUpDto);

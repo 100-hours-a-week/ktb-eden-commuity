@@ -27,6 +27,11 @@ public abstract class BaseInMemoryRepository<T> implements CrudCustomRepository<
     }
 
     @Override
+    public boolean existsById(Long id) {
+        return store.containsKey(id);
+    }
+
+    @Override
     public Optional<T> findById(Long id) {
         return Optional.ofNullable(store.get(id));
     }
