@@ -1,7 +1,9 @@
 package com.example.restapi_subject.domain.board.controller;
 
+import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.dto.BoardReq;
 import com.example.restapi_subject.domain.board.dto.BoardRes;
+import com.example.restapi_subject.domain.boardlike.service.BoardLikeService;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
 import com.example.restapi_subject.domain.board.service.BoardService;
 import com.example.restapi_subject.domain.comment.service.CommentService;
@@ -19,6 +21,7 @@ public class BoardController {
 
     private final BoardService boardService;
     private final CommentService commentService;
+    private final BoardLikeService boardLikeService;
 
     @GetMapping
     @Operation(summary = "게시글 목록 조회(커서)", description = "커서(null이면 첫페이지) 기반으로 게시글(default=10개)을 조회합니다.(비회원도 가능)")
@@ -27,7 +30,8 @@ public class BoardController {
             @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
-        return ApiResponse.ok("board_list_success", boardService.listByCursor(userId, cursorId, pageSize));
+        PageCursor<BoardRes.BoardDto> boards = boardService.listByCursorWithLikes(userId, cursorId, pageSize);
+        return ApiResponse.ok("board_list_success", boards);
     }
 
     // TODO : 비회원 게시글 작성 고려
@@ -46,9 +50,12 @@ public class BoardController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        BoardRes.BoardDto board = boardService.get(boardId, userId);
+        Board board = boardService.getBoardAndIncreaseViewOrThrow(boardId);
+        boolean liked = (userId != null) && boardLikeService.isLiked(boardId, userId);
         CommentRes.PageDto<CommentRes.CommentDto> comments = commentService.list(boardId, page, size);
-        return ApiResponse.ok("board_detail_success", new BoardRes.DetailDto(board, comments));
+        BoardRes.DetailDto detailDto = BoardRes.DetailDto.from(board, liked, comments);
+
+        return ApiResponse.ok("board_detail_success", detailDto);
     }
 
     @PatchMapping("/{id}")
@@ -65,19 +72,5 @@ public class BoardController {
                                     @RequestAttribute("userId") Long userId) {
         boardService.delete(boardId, userId);
         return ApiResponse.ok("board_deleted_success", null);
-    }
-
-    @PostMapping("/{id}/like")
-    @Operation(summary = "게시글 좋아요", description = "토큰(AT)검증후 게시글 좋아요를 추가합니다.")
-    public ApiResponse<BoardRes.LikeDto> like(@PathVariable("id") Long boardId,
-                                               @RequestAttribute("userId") Long userId) {
-        return ApiResponse.ok("board_liked_success", boardService.like(boardId, userId));
-    }
-
-    @DeleteMapping("/{id}/like")
-    @Operation(summary = "게시글 좋아요 취소", description = "토큰(AT)검증후 게시글 좋아요를 취소합니다.")
-    public ApiResponse<BoardRes.LikeDto> unlike(@PathVariable("id") Long boardId,
-                                                 @RequestAttribute("userId") Long userId) {
-        return ApiResponse.ok("board_unliked_success", boardService.unlike(boardId, userId));
     }
 }
