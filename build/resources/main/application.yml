@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: restapi-subject
-
-  profiles:
-    active: local
-    include: secret
