@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface BoardRepository extends CrudCustomRepository<Board, Long> {
 
-    public List<Board> findAllByCursor(Long cursorId, int size);
+    List<Board> findAllByCursor(Long cursorId, int size);
 
 }
