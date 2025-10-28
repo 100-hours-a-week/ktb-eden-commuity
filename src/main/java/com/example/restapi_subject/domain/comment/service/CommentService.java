@@ -1,8 +1,7 @@
 package com.example.restapi_subject.domain.comment.service;
 
-import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.event.CommentEvent;
-import com.example.restapi_subject.domain.board.repository.BoardRepository;
+import com.example.restapi_subject.domain.board.service.BoardService;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.dto.CommentReq;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
@@ -20,11 +19,11 @@ import java.util.List;
 public class CommentService {
 
     private final CommentRepository commentRepository;
-    private final BoardRepository boardRepository;
+    private final BoardService boardService;
     private final ApplicationEventPublisher eventPublisher;
 
     public CommentRes.CreateIdDto create(Long boardId, Long authorId, CommentReq.CreateDto dto) {
-        ensureBoardExists(boardId);
+        boardService.ensureBoardExists(boardId);
         Comment saved = commentRepository.save(Comment.create(boardId, authorId, dto.content()));
         eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.CREATED));
 
@@ -32,7 +31,7 @@ public class CommentService {
     }
 
     public CommentRes.PageDto<CommentRes.CommentDto> list(Long boardId, int page, int size) {
-        ensureBoardExists(boardId);
+        boardService.ensureBoardExists(boardId);
         if (page < 0) page = 0;
         if (size <= 0) size = 10;
 
@@ -64,15 +63,6 @@ public class CommentService {
     /**
      * 내부 메서드
      */
-
-    private Board getBoardById(Long boardId) {
-        return boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
-    }
-
-    private void ensureBoardExists(Long boardId) {
-        getBoardById(boardId);
-    }
 
     private Comment getCommentOrThrow(Long commentId) {
         return commentRepository.findById(commentId)
