@@ -1,5 +1,7 @@
-package com.example.restapi_subject.domain.auth.repository;
+package com.example.restapi_subject.domain.auth.repository.impl;
 
+import com.example.restapi_subject.domain.auth.repository.RefreshTokenRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
@@ -7,7 +9,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Repository
-public class InMemoryRefreshTokenStore implements RefreshTokenRepository {
+@Profile("inmemory")
+public class InMemoryRefreshTokenStoreImpl implements RefreshTokenRepository {
 
     private final Map<Long, String> latestRtByUser = new ConcurrentHashMap<>();
 
