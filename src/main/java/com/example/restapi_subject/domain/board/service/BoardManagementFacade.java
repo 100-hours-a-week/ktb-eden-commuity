@@ -37,6 +37,7 @@ public class BoardManagementFacade {
         return new PageCursor<>(dtoList, boardsCursor.hasNext(), boardsCursor.nextCursorId());
     }
 
+    @Transactional
     public BoardRes.DetailDto getDetailDto(Long boardId, Long userId, int page, int size) {
         Board board = boardService.getBoardAndIncreaseViewOrThrow(boardId);
         CommentRes.PageDto<CommentRes.CommentDto> comments = commentService.list(boardId, page, size);
