@@ -3,36 +3,36 @@ package com.example.restapi_subject.domain.board.domain;
 import com.example.restapi_subject.global.common.entity.BaseEntity;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board extends BaseEntity {
+
     private Long id;
     private Long authorId;
     private String title;
     private String content;
     private String image;
-
-    // TODO : DB 도입 시 원자적 쿼리로 개선 고려
-    private AtomicInteger viewCount;
-    private AtomicInteger likeCount;
-    private AtomicInteger commentCount;
+    private int viewCount;
+    private int likeCount;
+    private int commentCount;
 
     @Builder
-    private Board(Long authorId, String title, String content, String image, AtomicInteger viewCount, AtomicInteger likeCount, AtomicInteger commentCount) {
+    private Board(Long id, Long authorId, String title, String content, String image, Integer viewCount, Integer likeCount, Integer commentCount) {
         super();
+        this.id = id;
         this.authorId = authorId;
         this.title = title;
         this.content = content;
         this.image = image;
-        this.viewCount = (viewCount == null ? new AtomicInteger(0) : viewCount);
-        this.likeCount = (likeCount == null ? new AtomicInteger(0) : likeCount);
-        this.commentCount = (commentCount == null ? new AtomicInteger(0) : commentCount);
+        this.viewCount = (viewCount == null ? 0 : viewCount);
+        this.likeCount = (likeCount == null ? 0 : likeCount);
+        this.commentCount = (commentCount == null ? 0 : commentCount);
     }
 
     public static Board create(Long authorId, String title, String content, String image) {
@@ -59,16 +59,16 @@ public class Board extends BaseEntity {
         copy.id = id;
         return copy;
     }
-    public void increaseView() { this.viewCount.incrementAndGet(); }
-    public void increaseLike() { this.likeCount.incrementAndGet(); }
+    public void increaseView() { this.viewCount++; }
+    public void increaseLike() { this.likeCount++; }
     public void decreaseLike() {
-        if (this.likeCount.get() == 0) return; // 또는 예외
-        this.likeCount.decrementAndGet();
+        if (this.likeCount == 0) return; // 또는 예외
+        this.likeCount--;
     }
-    public void increaseComment() { this.commentCount.incrementAndGet(); }
+    public void increaseComment() { this.commentCount++; }
     public void decreaseComment() {
-        if (this.commentCount.get() == 0) return; // 또는 예외
-        this.commentCount.decrementAndGet();
+        if (this.commentCount == 0) return; // 또는 예외
+        this.commentCount--;
     }
 
     public void changeTitle(String title) {

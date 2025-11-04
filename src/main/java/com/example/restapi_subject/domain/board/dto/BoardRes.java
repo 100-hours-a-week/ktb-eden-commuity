@@ -28,9 +28,9 @@ public record BoardRes() {
                     b.getImage(),
                     b.getCreatedDate(),
                     b.getUpdatedDate(),
-                    b.getViewCount().get(),
-                    b.getLikeCount().get(),
-                    b.getCommentCount().get(),
+                    b.getViewCount(),
+                    b.getLikeCount(),
+                    b.getCommentCount(),
                     likedByMe
             );
         }
