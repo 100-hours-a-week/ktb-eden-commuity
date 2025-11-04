@@ -4,6 +4,7 @@ package com.example.restapi_subject.domain.user.domain;
 import com.example.restapi_subject.global.common.entity.BaseEntity;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
+
     private Long id;
     private String email;
     private String password;
@@ -19,8 +21,9 @@ public class User extends BaseEntity {
     private String profileImage;
 
     @Builder
-    private User (String email, String password, String nickname, String profileImage) {
+    private User (Long id, String email, String password, String nickname, String profileImage) {
         super();
+        this.id = id;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
