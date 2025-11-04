@@ -1,12 +1,9 @@
 package com.example.restapi_subject.domain.board.controller;
 
-import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.dto.BoardReq;
 import com.example.restapi_subject.domain.board.dto.BoardRes;
-import com.example.restapi_subject.domain.boardlike.service.BoardLikeService;
-import com.example.restapi_subject.domain.comment.dto.CommentRes;
+import com.example.restapi_subject.domain.board.service.BoardManagementFacade;
 import com.example.restapi_subject.domain.board.service.BoardService;
-import com.example.restapi_subject.domain.comment.service.CommentService;
 import com.example.restapi_subject.global.common.dto.PageCursor;
 import com.example.restapi_subject.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,9 +16,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/boards")
 public class BoardController {
 
+    private final BoardManagementFacade  boardManagementFacade;
     private final BoardService boardService;
-    private final CommentService commentService;
-    private final BoardLikeService boardLikeService;
 
     @GetMapping
     @Operation(summary = "게시글 목록 조회(커서)", description = "커서(null이면 첫페이지) 기반으로 게시글(default=10개)을 조회합니다.(비회원도 가능)")
@@ -30,7 +26,7 @@ public class BoardController {
             @RequestParam(required = false) Long cursorId,
             @RequestParam(defaultValue = "10") int pageSize
     ) {
-        PageCursor<BoardRes.BoardDto> boards = boardService.listByCursorWithLikes(userId, cursorId, pageSize);
+        PageCursor<BoardRes.BoardDto> boards = boardManagementFacade.listByCursorWithLikes(userId, cursorId, pageSize);
         return ApiResponse.ok("board_list_success", boards);
     }
 
@@ -50,11 +46,7 @@ public class BoardController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        Board board = boardService.getBoardAndIncreaseViewOrThrow(boardId);
-        boolean liked = (userId != null) && boardLikeService.isLiked(boardId, userId);
-        CommentRes.PageDto<CommentRes.CommentDto> comments = commentService.list(boardId, page, size);
-        BoardRes.DetailDto detailDto = BoardRes.DetailDto.from(board, liked, comments);
-
+        BoardRes.DetailDto detailDto = boardManagementFacade.getDetailDto(boardId, userId, page, size);
         return ApiResponse.ok("board_detail_success", detailDto);
     }
 
