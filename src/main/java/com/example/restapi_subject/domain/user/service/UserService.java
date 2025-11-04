@@ -1,7 +1,6 @@
 package com.example.restapi_subject.domain.user.service;
 
 import com.example.restapi_subject.domain.auth.dto.AuthReq;
-import com.example.restapi_subject.domain.auth.repository.InMemoryRefreshTokenStore;
 import com.example.restapi_subject.domain.auth.service.AuthService;
 import com.example.restapi_subject.domain.user.domain.User;
 import com.example.restapi_subject.domain.user.dto.UserReq;
@@ -12,14 +11,15 @@ import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordUtil passwordUtil;
-    private final InMemoryRefreshTokenStore refreshTokenStore;
     private final AuthService authService;
 
     public UserRes.UserDto me(Long userId) {
@@ -27,6 +27,7 @@ public class UserService {
         return UserRes.UserDto.from(u);
     }
 
+    @Transactional
     public UserRes.UpdateProfileDto updateProfile(Long userId, UserReq.UpdateProfileDto dto) {
         User user = getUserOrThrow(userId);
         validateUpdateNickname(user, dto);
@@ -36,6 +37,7 @@ public class UserService {
         return UserRes.UpdateProfileDto.from(user);
     }
 
+    @Transactional
     public void changePassword(Long userId, UserReq.ChangePasswordDto dto) {
         User user = getUserOrThrow(userId);
         validateNewPassword(user, dto);
@@ -45,13 +47,14 @@ public class UserService {
         userRepository.save(user);
     }
 
+    @Transactional
     public void deleteAccount(Long userId, UserReq.DeleteAccountDto dto) {
         User user = getUserOrThrow(userId);
         checkPasswordOrThrow(dto, user);
 
         AuthReq.DeleteRefreshTokenDto deleteRefreshTokenDto = new AuthReq.DeleteRefreshTokenDto(dto.password());
         authService.deleteRefreshToken(userId, deleteRefreshTokenDto);
-        userRepository.delete(userId);
+        userRepository.delete(user);
     }
 
     /**

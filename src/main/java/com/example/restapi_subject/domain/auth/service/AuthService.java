@@ -14,12 +14,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -27,6 +29,7 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenStore;
 
+    @Transactional
     public Long signUp(AuthReq.SignUpDto signUpDto) {
         validateSignUpDto(signUpDto);
         String hashedPwd = passwordUtil.hash(signUpDto.password());
@@ -40,12 +43,14 @@ public class AuthService {
         return userRepository.save(newUser).getId();
     }
 
+    @Transactional
     public AuthRes.LoginDto login(AuthReq.LoginDto dto) {
         User user = authenticateUser(dto);
         AuthRes.TokenDto tokenDto = issueTokensAndPersist(user);
         return new AuthRes.LoginDto(user.getId(), tokenDto);
     }
 
+    @Transactional
     public void logout(String refreshToken) {
         validateRefreshToken(refreshToken);
         Long userId = jwtUtil.getUserId(refreshToken);
@@ -54,6 +59,7 @@ public class AuthService {
         if(!deleted) throw new CustomException(ExceptionType.TOKEN_INVALID);
     }
 
+    @Transactional
     public AuthRes.TokenDto refresh(String refreshToken) {
         validateRefreshToken(refreshToken);
         Long userId = jwtUtil.getUserId(refreshToken);
@@ -69,6 +75,7 @@ public class AuthService {
                 .or(() -> extractFromCookies(request));
     }
 
+    @Transactional
     public void deleteRefreshToken(Long userId, AuthReq.DeleteRefreshTokenDto dto) {
         User user = authenticateUser(userId, dto);
         refreshTokenStore.delete(userId);

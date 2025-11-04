@@ -8,18 +8,21 @@ import com.example.restapi_subject.domain.boardlike.repository.BoardLikeReposito
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoardLikeService {
 
     private final BoardValidator boardValidator;
     private final BoardLikeRepository boardLikeRepository;
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional
     public BoardLikeResDto.LikeDto like(Long boardId, Long userId) {
         boardValidator.ensureBoardExists(boardId);
 
@@ -32,6 +35,7 @@ public class BoardLikeService {
         return BoardLikeResDto.LikeDto.of(boardId, likeCount, true);
     }
 
+    @Transactional
     public BoardLikeResDto.LikeDto unlike(Long boardId, Long userId) {
         boardValidator.ensureBoardExists(boardId);
 
