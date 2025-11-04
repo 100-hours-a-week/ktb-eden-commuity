@@ -20,6 +20,7 @@ public enum ExceptionType {
     PASSWORD_SAME_AS_OLD("password_same_as_old", HttpStatus.BAD_REQUEST),
 
     // TOKEN
+    TOKEN_NOT_FOUND("token_not_found", HttpStatus.NOT_FOUND),
     TOKEN_MISSING("token_missing",  HttpStatus.UNAUTHORIZED),
     TOKEN_INVALID("token_invalid", HttpStatus.UNAUTHORIZED),
     TOKEN_EXPIRED("token_expired", HttpStatus.UNAUTHORIZED) ,
