@@ -4,6 +4,8 @@ import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.infra.CommentEntity;
 import com.example.restapi_subject.domain.comment.repository.CommentJpaRepository;
 import com.example.restapi_subject.domain.comment.repository.CommentRepository;
+import com.example.restapi_subject.global.error.exception.CustomException;
+import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
@@ -22,13 +24,22 @@ public class JpaCommentRepositoryImpl implements CommentRepository {
 
     @Override
     public Comment save(Comment comment) {
-        CommentEntity entity = CommentEntity.of(
-                comment.getBoardId(),
-                comment.getAuthorId(),
-                comment.getContent()
-        );
-        return commentJpaRepository.save(entity).toDomain();
+        if (comment.getId() == null) {
+            CommentEntity newEntity = CommentEntity.from(comment);
+            return commentJpaRepository.save(newEntity).toDomain();
+        }
 
+        CommentEntity existing = commentJpaRepository.findById(comment.getId())
+                .orElseThrow(() -> new CustomException(ExceptionType.COMMENT_NOT_FOUND));
+
+        CommentEntity updated = CommentEntity.builder()
+                .id(existing.getId())
+                .board(existing.getBoard())
+                .author(existing.getAuthor())
+                .content(comment.getContent())
+                .build();
+
+        return commentJpaRepository.save(updated).toDomain();
     }
 
     @Override
@@ -39,12 +50,10 @@ public class JpaCommentRepositoryImpl implements CommentRepository {
 
     @Override
     public void delete(Comment comment) {
-        CommentEntity entity = CommentEntity.of(
-                comment.getBoardId(),
-                comment.getAuthorId(),
-                comment.getContent()
-        );
-        commentJpaRepository.delete(entity);
+        CommentEntity existing = commentJpaRepository.findById(comment.getId())
+                .orElseThrow(() -> new CustomException(ExceptionType.COMMENT_NOT_FOUND));
+
+        commentJpaRepository.delete(existing);
     }
 
     @Override

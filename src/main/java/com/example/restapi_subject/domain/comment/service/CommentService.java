@@ -20,6 +20,8 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CommentService {
 
+    // TODO : soft delete 고려
+
     private final CommentRepository commentRepository;
     private final BoardValidator boardValidator;
     private final ApplicationEventPublisher eventPublisher;
@@ -62,6 +64,7 @@ public class CommentService {
     public void delete(Long boardId, Long commentId, Long requesterId) {
         Comment c = getCommentOrThrow(commentId);
         checkEditableOrThrow(c, boardId, requesterId);
+        commentRepository.delete(c);
         eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.DELETED));
     }
 
