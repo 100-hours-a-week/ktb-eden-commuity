@@ -54,7 +54,8 @@ public class UserService {
 
         AuthReq.DeleteRefreshTokenDto deleteRefreshTokenDto = new AuthReq.DeleteRefreshTokenDto(dto.password());
         authService.deleteRefreshToken(userId, deleteRefreshTokenDto);
-        userRepository.delete(user);
+        user.softDelete();
+        userRepository.save(user);
     }
 
     /**

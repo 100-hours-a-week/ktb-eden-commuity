@@ -76,6 +76,16 @@ public class InMemoryUserRepositoryImpl extends BaseInMemoryRepository<User> imp
     }
 
     @Override
+    public boolean existsByNicknameAndDeletedFalse(String nickname) {
+        Long id = nicknameIndex.get(nickname);
+        if (id == null) return false;
+
+        return findById(id)
+                .map(user -> !user.isDeleted())
+                .orElse(false);
+    }
+
+    @Override
     public boolean existsByNickname(String nickname) {
         return nicknameIndex.containsKey(nickname);
     }

@@ -4,12 +4,14 @@ import com.example.restapi_subject.domain.board.infra.BoardEntity;
 import com.example.restapi_subject.domain.boardlike.infra.BoardLikeEntity;
 import com.example.restapi_subject.domain.comment.infra.CommentEntity;
 import com.example.restapi_subject.domain.user.domain.User;
-import com.example.restapi_subject.global.common.entity.BaseEntity;
+import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +20,9 @@ import java.util.List;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity extends BaseEntity {
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE user_id = ?")
+@Where(clause = "deleted = false")
+public class UserEntity extends JpaBaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
@@ -36,24 +40,27 @@ public class UserEntity extends BaseEntity {
     @Column(nullable = false)
     private String profileImage;
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private boolean deleted = false;
+
+    @OneToMany(mappedBy = "author")
     private List<BoardEntity> boards = new ArrayList<>();
 
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "author")
     private List<CommentEntity> comments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<BoardLikeEntity> boardLikes = new ArrayList<>();
 
 
     @Builder
-    private UserEntity (Long id, String email, String password, String nickname, String profileImage) {
+    private UserEntity (Long id, String email, String password, String nickname, String profileImage, boolean deleted) {
         super();
         this.id = id;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.profileImage = profileImage;
+        this.deleted = deleted;
     }
 
     public static UserEntity of(Long id) {
@@ -69,6 +76,7 @@ public class UserEntity extends BaseEntity {
                 .password(user.getPassword())
                 .nickname(user.getNickname())
                 .profileImage(user.getProfileImage())
+                .deleted(user.isDeleted())
                 .build();
     }
 

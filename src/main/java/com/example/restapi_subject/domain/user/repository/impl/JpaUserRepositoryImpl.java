@@ -60,4 +60,9 @@ public class JpaUserRepositoryImpl implements UserRepository {
     public boolean existsByEmail(String email) {
         return userJpaRepository.existsByEmail(email);
     }
+
+    @Override
+    public boolean existsByNicknameAndDeletedFalse(String nickname) {
+        return userJpaRepository.existsByNicknameAndDeletedFalse(nickname);
+    }
 }

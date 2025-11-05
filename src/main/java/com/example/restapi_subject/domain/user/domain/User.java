@@ -19,15 +19,17 @@ public class User extends BaseEntity {
     private String password;
     private String nickname;
     private String profileImage;
+    private boolean deleted;
 
     @Builder
-    private User (Long id, String email, String password, String nickname, String profileImage) {
+    private User (Long id, String email, String password, String nickname, String profileImage, boolean deleted) {
         super();
         this.id = id;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.profileImage = profileImage;
+        this.deleted = deleted;
     }
 
     public static User create(String email, String hashedPw, String nickname, String profileImage) {
@@ -51,6 +53,23 @@ public class User extends BaseEntity {
         copy.id = id;
         return copy;
     }
+
+    public void softDelete() {
+        long timestamp = System.currentTimeMillis();
+        this.deleted = true;
+        this.email = this.email + ".deleted." + timestamp;
+        this.nickname = this.nickname + ".deleted." + timestamp;
+        touch();
+    }
+
+    public void restore() {
+        if (!deleted) return;
+        this.deleted = false;
+        this.email = this.email.replaceFirst("\\.deleted\\.\\d+$", "");
+        this.nickname = this.nickname.replaceFirst("\\.deleted\\.\\d+$", "");
+        touch();
+    }
+
 
     public void changeProfile(String nickname, String profileImage) {
         if (nickname != null) this.nickname = nickname;
