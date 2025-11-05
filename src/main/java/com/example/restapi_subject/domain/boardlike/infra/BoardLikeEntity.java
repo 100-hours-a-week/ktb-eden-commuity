@@ -3,7 +3,7 @@ package com.example.restapi_subject.domain.boardlike.infra;
 import com.example.restapi_subject.domain.board.infra.BoardEntity;
 import com.example.restapi_subject.domain.boardlike.domain.BoardLike;
 import com.example.restapi_subject.domain.user.infra.UserEntity;
-import com.example.restapi_subject.global.common.entity.BaseEntity;
+import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
         })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BoardLikeEntity extends BaseEntity {
+public class BoardLikeEntity extends JpaBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

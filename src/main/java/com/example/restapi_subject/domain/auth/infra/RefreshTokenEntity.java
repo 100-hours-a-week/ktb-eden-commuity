@@ -2,7 +2,7 @@ package com.example.restapi_subject.domain.auth.infra;
 
 
 import com.example.restapi_subject.domain.auth.domain.RefreshToken;
-import com.example.restapi_subject.global.common.entity.BaseEntity;
+import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "refresh_token")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class RefreshTokenEntity extends BaseEntity {
+public class RefreshTokenEntity extends JpaBaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

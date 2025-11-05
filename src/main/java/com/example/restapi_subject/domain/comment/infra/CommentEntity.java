@@ -4,7 +4,7 @@ package com.example.restapi_subject.domain.comment.infra;
 import com.example.restapi_subject.domain.board.infra.BoardEntity;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.user.infra.UserEntity;
-import com.example.restapi_subject.global.common.entity.BaseEntity;
+import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "comment")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CommentEntity extends BaseEntity {
+public class CommentEntity extends JpaBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,11 +50,11 @@ public class CommentEntity extends BaseEntity {
                 .build();
     }
 
-    public static CommentEntity from(Comment comment, BoardEntity board, UserEntity author) {
+    public static CommentEntity from(Comment comment) {
         return CommentEntity.builder()
                 .id(comment.getId())
-                .board(board)
-                .author(author)
+                .board(BoardEntity.of(comment.getBoardId()))
+                .author(UserEntity.of(comment.getAuthorId()))
                 .content(comment.getContent())
                 .build();
     }
