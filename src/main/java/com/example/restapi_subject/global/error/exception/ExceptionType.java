@@ -41,6 +41,7 @@ public enum ExceptionType {
     NOT_LIKED("not_liked", HttpStatus.BAD_REQUEST),
 
     // ETC
+    FILE_EMPTY("file_empty", HttpStatus.BAD_REQUEST),
     INVALID_JSON("invalid_json", HttpStatus.BAD_REQUEST),
     SERVER_ERROR("internal_server_error",null);
 
