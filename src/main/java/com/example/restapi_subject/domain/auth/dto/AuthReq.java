@@ -3,8 +3,8 @@ package com.example.restapi_subject.domain.auth.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 
-public record AuthReq() {
-    public record SignUpDto(
+public class AuthReq {
+    public static record SignUpDto(
             @NotBlank(message = "email_required")
             @Pattern(
                     // 이메일은 영문과 @,.만 사용이 가능함
@@ -40,7 +40,7 @@ public record AuthReq() {
     ) {
     }
 
-    public record LoginDto(
+    public static record LoginDto(
             @NotBlank(message = "email_required")
             @Pattern(
                     // 이메일은 영문과 @,.만 사용이 가능함
@@ -61,7 +61,7 @@ public record AuthReq() {
     ){
     }
 
-    public record DeleteRefreshTokenDto(
+    public static record DeleteRefreshTokenDto(
             @NotBlank(message = "password_required")
             String password
     ){}
