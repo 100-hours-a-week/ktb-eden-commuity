@@ -26,10 +26,8 @@ public class BoardService {
 
     @Transactional
     public Board getBoardAndIncreaseViewOrThrow(Long boardId) {
-        return boardRepository.update(boardId, cur -> {
-                    cur.increaseView();
-                    return cur;
-                })
+        boardRepository.updateViewCount(boardId, 1);
+        return boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
     }
 

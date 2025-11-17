@@ -9,9 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 
@@ -98,6 +96,14 @@ public class InMemoryUserRepositoryImpl extends BaseInMemoryRepository<User> imp
             nicknameIndex.remove(norm(u.getNickname()));
         });
         super.delete(user);
+    }
+
+    @Override
+    public List<User> findAllById(Set<Long> ids) {
+        if (ids == null || ids.isEmpty()) return List.of();
+        return store.values().stream()
+                .filter(u -> ids.contains(u.getId()))
+                .toList();
     }
 
     @Override

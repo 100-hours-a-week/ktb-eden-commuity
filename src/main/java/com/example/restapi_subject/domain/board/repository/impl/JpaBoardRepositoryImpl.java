@@ -75,7 +75,7 @@ public class JpaBoardRepositoryImpl implements BoardRepository {
 
     @Override
     public List<Board> findAllByCursor(Long cursorId, int size) {
-        return boardJpaRepository.findAllByCursor(cursorId, PageRequest.of(0, size))
+        return boardJpaRepository.findAllByCursor(cursorId, PageRequest.of(0, size+1))
                 .stream()
                 .map(BoardEntity::toDomain)
                 .collect(Collectors.toList());
@@ -84,5 +84,20 @@ public class JpaBoardRepositoryImpl implements BoardRepository {
     @Override
     public boolean existsById(Long id) {
         return boardJpaRepository.existsById(id);
+    }
+
+    @Override
+    public void updateCommentCount(Long boardId, int delta) {
+        boardJpaRepository.updateCommentCount(boardId, delta);
+    }
+
+    @Override
+    public void updateViewCount(Long boardId, int delta) {
+        boardJpaRepository.updateViewCount(boardId, delta);
+    }
+
+    @Override
+    public void updateLikeCount(Long boardId, int delta) {
+        boardJpaRepository.updateLikeCount(boardId, delta);
     }
 }

@@ -18,6 +18,7 @@ public enum ExceptionType {
     USER_NOT_FOUND("user_not_found", HttpStatus.NOT_FOUND),
     INVALID_CREDENTIALS("invalid_credentials", HttpStatus.UNAUTHORIZED),
     PASSWORD_SAME_AS_OLD("password_same_as_old", HttpStatus.BAD_REQUEST),
+    USER_ALREADY_DELETED("user_already_deleted", HttpStatus.CONFLICT),
 
     // TOKEN
     TOKEN_NOT_FOUND("token_not_found", HttpStatus.NOT_FOUND),

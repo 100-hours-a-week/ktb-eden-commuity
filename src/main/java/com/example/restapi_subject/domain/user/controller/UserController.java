@@ -47,10 +47,9 @@ public class UserController {
     @Operation(summary = "유저 삭제", description = "토큰(AT)검증후 유저를 삭제합니다.")
     public ApiResponse<Void> delete(
             @RequestAttribute("userId") Long userId,
-            @Valid @RequestBody UserReq.DeleteAccountDto dto,
             HttpServletResponse response
     ) {
-        userService.deleteAccount(userId, dto);
+        userService.deleteAccount(userId);
         ResponseCookie cleared = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(false) // 로컬 개발 시 false

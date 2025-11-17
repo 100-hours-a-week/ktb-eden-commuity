@@ -4,10 +4,7 @@ import com.example.restapi_subject.domain.boardlike.repository.BoardLikeReposito
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -47,10 +44,32 @@ public class InMemoryBoardLikeRepositoryImpl implements BoardLikeRepository {
     }
 
     @Override
+    public void deleteByUserId(Long userId) {
+        Set<Long> likedBoards = likesByUser.remove(userId);
+        if (likedBoards == null || likedBoards.isEmpty()) {
+            return;
+        }
+        for (Long boardId : likedBoards) {
+            Set<Long> users = likesByBoard.get(boardId);
+            if (users != null) {
+                users.remove(userId);
+                if (users.isEmpty()) {
+                    likesByBoard.remove(boardId);
+                }
+            }
+        }
+    }
+
+    @Override
     public Set<Long> findAllByUserIdAndBoardIds(List<Long> boardIds,Long userId) {
         Set<Long> likedBoards = likesByUser.getOrDefault(userId, Set.of());
         return boardIds.stream()
                 .filter(likedBoards::contains)
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<Long> findActiveBoardIdsByUserId(Long userId) {
+        return new ArrayList<>(likesByUser.getOrDefault(userId, Set.of()));
     }
 }

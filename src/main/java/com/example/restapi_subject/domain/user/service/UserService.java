@@ -1,17 +1,22 @@
 package com.example.restapi_subject.domain.user.service;
 
-import com.example.restapi_subject.domain.auth.dto.AuthReq;
 import com.example.restapi_subject.domain.auth.service.AuthService;
 import com.example.restapi_subject.domain.user.domain.User;
 import com.example.restapi_subject.domain.user.dto.UserReq;
 import com.example.restapi_subject.domain.user.dto.UserRes;
+import com.example.restapi_subject.domain.user.event.UserEvent;
 import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.PasswordUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +26,22 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordUtil passwordUtil;
     private final AuthService authService;
+    private final ApplicationEventPublisher eventPublisher;
+
+    public UserRes.SimpleProfileDto getProfileByIdOrDeleted(Long userId) {
+        return userRepository.findById(userId)
+                .map(UserRes.SimpleProfileDto::from)
+                .orElse(new UserRes.SimpleProfileDto("탈퇴한 사용자", "/images/default.png"));
+    }
+
+    public Map<Long, UserRes.SimpleProfileDto> getProfilesByIds(Set<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) return Map.of();
+        return userRepository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(
+                        User::getId,
+                        UserRes.SimpleProfileDto::from
+                ));
+    }
 
     public UserRes.UserDto me(Long userId) {
         User u = getUserOrThrow(userId);
@@ -41,32 +62,24 @@ public class UserService {
     public void changePassword(Long userId, UserReq.ChangePasswordDto dto) {
         User user = getUserOrThrow(userId);
         validateNewPassword(user, dto);
-
         String hashed = passwordUtil.hash(dto.newPassword());
         user.changePasswordHashed(hashed);
         userRepository.save(user);
     }
 
     @Transactional
-    public void deleteAccount(Long userId, UserReq.DeleteAccountDto dto) {
+    public void deleteAccount(Long userId) {
         User user = getUserOrThrow(userId);
-        checkPasswordOrThrow(dto, user);
 
-        AuthReq.DeleteRefreshTokenDto deleteRefreshTokenDto = new AuthReq.DeleteRefreshTokenDto(dto.password());
-        authService.deleteRefreshToken(userId, deleteRefreshTokenDto);
+        authService.deleteRefreshToken(userId);
         user.softDelete();
         userRepository.save(user);
+        eventPublisher.publishEvent(new UserEvent(userId, UserEvent.Type.DELETED));
     }
 
     /**
      * 내부 메소드
      */
-
-    private void checkPasswordOrThrow(UserReq.DeleteAccountDto dto, User user) {
-        if (!passwordUtil.matches(dto.password(), user.getPassword())) {
-            throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
-        }
-    }
 
     private void validateNewPassword(User user, UserReq.ChangePasswordDto dto) {
         if (!dto.newPassword().equals(dto.newPasswordConfirm())) {

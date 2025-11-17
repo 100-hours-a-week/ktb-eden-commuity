@@ -60,6 +60,29 @@ public class InMemoryBoardRepositoryImpl implements BoardRepository {
     }
 
     @Override
+    public void updateCommentCount(Long boardId, int delta) {
+        Board board = store.get(boardId);
+        if (board == null) return;
+        if (delta > 0) board.increaseComment();
+        else board.decreaseComment();
+    }
+
+    @Override
+    public void updateViewCount(Long boardId, int delta) {
+        Board board = store.get(boardId);
+        if (board == null) return;
+        if (delta > 0) board.increaseView();
+    }
+
+    @Override
+    public void updateLikeCount(Long boardId, int delta) {
+        Board board = store.get(boardId);
+        if (board == null) return;
+        if (delta > 0) board.increaseLike();
+        else board.decreaseLike();
+    }
+
+    @Override
     public Optional<Board> findById(Long id) {
         return Optional.ofNullable(store.get(id));
     }
