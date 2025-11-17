@@ -12,11 +12,16 @@ public interface BoardRepository {
     Optional<Board> update(Long id, UnaryOperator<Board> updater);
     Optional<Board> findById(Long id);
     void delete(Board board);
+    void softDeleteById(Long id);
+    void softDeleteByUserId(Long userId);
     void clear();
     List<Board> findAll();
 
     List<Board> findAllByCursor(Long cursorId, int size);
 
     boolean existsById(Long id);
+    void updateCommentCount(Long boardId, int delta);
+    void updateViewCount(Long boardId, int delta);
+    void updateLikeCount(Long boardId, int delta);
 
 }

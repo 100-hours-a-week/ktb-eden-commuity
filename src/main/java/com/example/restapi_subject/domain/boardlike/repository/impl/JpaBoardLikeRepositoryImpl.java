@@ -44,10 +44,20 @@ public class JpaBoardLikeRepositoryImpl implements BoardLikeRepository {
     }
 
     @Override
+    public void deleteByUserId(Long userId) {
+        boardLikeJpaRepository.deleteByUserId(userId);
+    }
+
+    @Override
     public Set<Long> findAllByUserIdAndBoardIds(List<Long> boardIds, Long userId) {
         return boardLikeJpaRepository.findAllByUserIdAndBoardIdIn(userId, boardIds)
                 .stream()
                 .map(entity -> entity.getBoard().getId())
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public List<Long> findActiveBoardIdsByUserId(Long userId) {
+        return boardLikeJpaRepository.findBoardIdsByUserId(userId);
     }
 }

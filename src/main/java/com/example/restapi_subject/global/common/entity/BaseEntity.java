@@ -17,6 +17,11 @@ public abstract class BaseEntity {
         this.updatedDate = LocalDateTime.now();
     }
 
+    protected BaseEntity(LocalDateTime createdDate, LocalDateTime updatedDate) {
+        this.createdDate = (createdDate != null ? createdDate : LocalDateTime.now());
+        this.updatedDate = (updatedDate != null ? updatedDate : LocalDateTime.now());
+    }
+
     protected void touch() {
         this.updatedDate = LocalDateTime.now();
     }

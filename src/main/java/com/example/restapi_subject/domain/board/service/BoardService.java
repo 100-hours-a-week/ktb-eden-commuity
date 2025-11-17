@@ -50,7 +50,7 @@ public class BoardService {
     public void delete(Long boardId, Long requesterId) {
         Board b = getBoardOrThrow(boardId);
         checkAuthorOrThrow(requesterId, b);
-        boardRepository.delete(b);
+        boardRepository.softDeleteById(boardId);
     }
 
     /**

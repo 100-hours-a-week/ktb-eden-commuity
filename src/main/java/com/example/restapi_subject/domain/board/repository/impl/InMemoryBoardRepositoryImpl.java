@@ -85,6 +85,22 @@ public class InMemoryBoardRepositoryImpl implements BoardRepository {
     }
 
     @Override
+    public void softDeleteById(Long boardId) {
+        Board board = store.get(boardId);
+        if (board != null && !board.isDeleted()) {
+            board.softDelete();
+            store.put(boardId, board);
+        }
+    }
+
+    @Override
+    public void softDeleteByUserId(Long userId) {
+        store.values().stream()
+                .filter(b -> b.getAuthorId().equals(userId))
+                .forEach(Board::softDelete);
+    }
+
+    @Override
     public void clear() {
         store.clear();
         sequence.set(0);

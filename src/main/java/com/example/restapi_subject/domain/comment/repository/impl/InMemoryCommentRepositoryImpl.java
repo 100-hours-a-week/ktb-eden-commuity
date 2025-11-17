@@ -13,6 +13,33 @@ import java.util.*;
 public class InMemoryCommentRepositoryImpl extends BaseInMemoryRepository<Comment> implements CommentRepository {
 
     @Override
+    public List<Comment> findActiveByUserId(Long userId) {
+        return store.values().stream()
+                .filter(c -> Objects.equals(c.getAuthorId(), userId))
+                .filter(c -> !c.isDeleted())
+                .sorted(Comparator.comparing(Comment::getId))
+                .toList();
+    }
+
+    @Override
+    public void softDeleteById(Long commentId) {
+        Comment comment = store.get(commentId);
+        if (comment != null && !comment.isDeleted()) {
+            comment.softDelete();
+            store.put(commentId, comment);
+        }
+    }
+
+    @Override
+    public void softDeleteByUserId(Long userId) {
+        store.values().forEach(comment -> {
+            if (Objects.equals(comment.getAuthorId(), userId)) {
+                comment.softDelete();
+            }
+        });
+    }
+
+    @Override
     public List<Comment> findByBoardIdPaged(Long boardId, int page, int size) {
         if (page < 0) page = 0;
         if (size <= 0) size = 10;

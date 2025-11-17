@@ -52,8 +52,25 @@ public class JpaCommentRepositoryImpl implements CommentRepository {
     public void delete(Comment comment) {
         CommentEntity existing = commentJpaRepository.findById(comment.getId())
                 .orElseThrow(() -> new CustomException(ExceptionType.COMMENT_NOT_FOUND));
-
         commentJpaRepository.delete(existing);
+    }
+
+    @Override
+    public List<Comment> findActiveByUserId(Long userId) {
+        return commentJpaRepository.findAllByAuthor_IdAndDeletedFalse(userId)
+                .stream()
+                .map(CommentEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public void softDeleteById(Long commentId) {
+        commentJpaRepository.softDeleteById(commentId);
+    }
+
+    @Override
+    public void softDeleteByUserId(Long userId) {
+        commentJpaRepository.softDeleteByUserId(userId);
     }
 
     @Override

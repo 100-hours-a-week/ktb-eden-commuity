@@ -51,6 +51,16 @@ public class JpaBoardRepositoryImpl implements BoardRepository {
     }
 
     @Override
+    public void softDeleteById(Long id) {
+        boardJpaRepository.softDeleteById(id);
+    }
+
+    @Override
+    public void softDeleteByUserId(Long userId) {
+        boardJpaRepository.softDeleteByUserId(userId);
+    }
+
+    @Override
     public void clear() {
         boardJpaRepository.deleteAll();
     }

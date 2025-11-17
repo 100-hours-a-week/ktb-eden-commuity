@@ -33,13 +33,16 @@ public class CommentEntity extends JpaBaseEntity {
     @Column(nullable = false)
     private String content;
 
+    private boolean deleted = false;
+
     @Builder
-    private CommentEntity(Long id, BoardEntity board, UserEntity author, String content) {
+    private CommentEntity(Long id, BoardEntity board, UserEntity author, String content, boolean deleted) {
         super();
         this.id = id;
         this.board = board;
         this.author = author;
         this.content = content;
+        this.deleted = deleted;
     }
 
     public static CommentEntity of(Long boardId, Long authorId, String content) {
@@ -65,6 +68,9 @@ public class CommentEntity extends JpaBaseEntity {
                 .boardId(this.board.getId())
                 .authorId(this.author.getId())
                 .content(this.content)
+                .createdDate(this.getCreatedDate())
+                .updateDate(this.getUpdatedDate())
+                .deleted(this.deleted)
                 .build();
     }
 }

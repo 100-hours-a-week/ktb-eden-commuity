@@ -40,9 +40,11 @@ public class BoardEntity extends JpaBaseEntity {
     @Column(nullable = false)
     private int commentCount = 0;
 
+    private boolean deleted = false;
+
     @Builder
     private BoardEntity(Long id, UserEntity author, String title, String content,
-                        String image, int viewCount, int likeCount, int commentCount) {
+                        String image, int viewCount, int likeCount, int commentCount, boolean deleted) {
         super();
         this.id = id;
         this.author = author;
@@ -52,6 +54,7 @@ public class BoardEntity extends JpaBaseEntity {
         this.viewCount = viewCount;
         this.likeCount = likeCount;
         this.commentCount = commentCount;
+        this.deleted = deleted;
     }
 
     public static BoardEntity of(Long id) {
@@ -70,6 +73,7 @@ public class BoardEntity extends JpaBaseEntity {
                 .viewCount(board.getViewCount())
                 .likeCount(board.getLikeCount())
                 .commentCount(board.getCommentCount())
+                .deleted(board.isDeleted())
                 .build();
     }
 
@@ -83,6 +87,9 @@ public class BoardEntity extends JpaBaseEntity {
                 .viewCount(this.viewCount)
                 .likeCount(this.likeCount)
                 .commentCount(this.commentCount)
+                .createdDate(this.getCreatedDate())
+                .updatedDate(this.getUpdatedDate())
+                .deleted(this.deleted)
                 .build();
     }
 }
