@@ -8,12 +8,12 @@ import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @Profile("jpa")
@@ -74,15 +74,8 @@ public class JpaCommentRepositoryImpl implements CommentRepository {
     }
 
     @Override
-    public List<Comment> findByBoardIdPaged(Long boardId, int page, int size) {
-        return commentJpaRepository.findByBoardId(boardId, PageRequest.of(page, size))
-                .stream()
-                .map(CommentEntity::toDomain)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public int countByBoardId(Long boardId) {
-        return commentJpaRepository.countByBoardId(boardId);
+    public Page<Comment> findByBoardId(Long boardId, Pageable pageable) {
+        return commentJpaRepository.findByBoardId(boardId, pageable)
+                .map(CommentEntity::toDomain);
     }
 }

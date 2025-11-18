@@ -1,6 +1,8 @@
 package com.example.restapi_subject.domain.comment.repository;
 
 import com.example.restapi_subject.domain.comment.domain.Comment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +15,5 @@ public interface CommentRepository {
     List<Comment> findActiveByUserId(Long userId);
     void softDeleteById(Long commentId);
     void softDeleteByUserId(Long userId);
-    List<Comment> findByBoardIdPaged(Long boardId, int page, int size);
-    int countByBoardId(Long boardId);
+    Page<Comment> findByBoardId(Long boardId, Pageable pageable);
 }

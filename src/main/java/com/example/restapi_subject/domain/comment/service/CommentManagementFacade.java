@@ -7,6 +7,9 @@ import com.example.restapi_subject.domain.comment.repository.CommentRepository;
 import com.example.restapi_subject.domain.user.dto.UserRes;
 import com.example.restapi_subject.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,18 +32,20 @@ public class CommentManagementFacade {
         if (page < 0) page = 0;
         if (size <= 0) size = 10;
 
-        int totalElements = commentRepository.countByBoardId(boardId);
-        int totalPages = (totalElements + size - 1) / size;
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Comment> comments = commentRepository.findByBoardId(boardId, pageable);
 
-        List<Comment> comments = commentRepository.findByBoardIdPaged(boardId, page, size);
+        List<Comment> content = comments.getContent();
+        int totalElements = (int) comments.getTotalElements();
+        int totalPages = comments.getTotalPages();
 
-        Set<Long> authorIds = comments.stream()
+        Set<Long> authorIds = content.stream()
                 .map(Comment::getAuthorId)
                 .collect(Collectors.toSet());
 
         Map<Long, UserRes.SimpleProfileDto> profileMap = userService.getProfilesByIds(authorIds);
 
-        List<CommentRes.CommentDto> items = comments.stream()
+        List<CommentRes.CommentDto> items = content.stream()
                 .map(c -> {
                     UserRes.SimpleProfileDto profileDto = profileMap.get(c.getAuthorId());
                     String nick = (profileDto != null) ? profileDto.nickname() : "탈퇴한 사용자";

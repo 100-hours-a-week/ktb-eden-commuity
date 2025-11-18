@@ -1,6 +1,7 @@
 package com.example.restapi_subject.domain.comment.repository;
 
 import com.example.restapi_subject.domain.comment.infra.CommentEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -24,7 +25,7 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
             order by c.id ASC
 
     """)
-    List<CommentEntity> findByBoardId(@Param("boardId") Long boardId, Pageable pageable);
+    Page<CommentEntity> findByBoardId(@Param("boardId") Long boardId, Pageable pageable);
 
 
     @Query("""
