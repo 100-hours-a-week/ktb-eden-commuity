@@ -52,8 +52,8 @@ public abstract class BaseInMemoryRepository<T> implements CrudCustomRepository<
     }
 
     @Override
-    public void delete(Long id) {
-        store.remove(id);
+    public void delete(T entity) {
+        store.remove(getId(entity));
     }
 
     @Override

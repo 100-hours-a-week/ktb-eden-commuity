@@ -9,7 +9,7 @@ public interface CrudCustomRepository<T, ID> {
     Optional<T> findById(ID id);
     List<T> findAll();
     Optional<T> update(Long id, UnaryOperator<T> updater);
-    void delete(ID id);
+    void delete(T entity);
     void clear();
     boolean existsById(ID id);
 }

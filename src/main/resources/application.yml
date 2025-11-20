@@ -3,5 +3,5 @@ spring:
     name: restapi-subject
 
   profiles:
-    active: local
+    active: local, jpa
     include: secret

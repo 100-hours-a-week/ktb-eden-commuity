@@ -1,7 +1,7 @@
 package com.example.restapi_subject.domain.comment.service;
 
 import com.example.restapi_subject.domain.board.event.CommentEvent;
-import com.example.restapi_subject.domain.board.service.BoardService;
+import com.example.restapi_subject.domain.board.service.BoardValidator;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.dto.CommentReq;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
@@ -11,19 +11,24 @@ import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
+    // TODO : soft delete 고려
+
     private final CommentRepository commentRepository;
-    private final BoardService boardService;
+    private final BoardValidator boardValidator;
     private final ApplicationEventPublisher eventPublisher;
 
+    @Transactional
     public CommentRes.CreateIdDto create(Long boardId, Long authorId, CommentReq.CreateDto dto) {
-        boardService.ensureBoardExists(boardId);
+        boardValidator.ensureBoardExists(boardId);
         Comment saved = commentRepository.save(Comment.create(boardId, authorId, dto.content()));
         eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.CREATED));
 
@@ -31,7 +36,7 @@ public class CommentService {
     }
 
     public CommentRes.PageDto<CommentRes.CommentDto> list(Long boardId, int page, int size) {
-        boardService.ensureBoardExists(boardId);
+        boardValidator.ensureBoardExists(boardId);
         if (page < 0) page = 0;
         if (size <= 0) size = 10;
 
@@ -45,6 +50,7 @@ public class CommentService {
         return new CommentRes.PageDto<>(items, page, size, totalPages, totalElements);
     }
 
+    @Transactional
     public CommentRes.CommentDto update(Long boardId, Long commentId, Long requesterId, CommentReq.UpdateDto dto) {
         Comment c = getCommentOrThrow(commentId);
         checkEditableOrThrow(c, boardId, requesterId);
@@ -54,9 +60,11 @@ public class CommentService {
         return CommentRes.CommentDto.from(c);
     }
 
+    @Transactional
     public void delete(Long boardId, Long commentId, Long requesterId) {
         Comment c = getCommentOrThrow(commentId);
         checkEditableOrThrow(c, boardId, requesterId);
+        commentRepository.delete(c);
         eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.DELETED));
     }
 

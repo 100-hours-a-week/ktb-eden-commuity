@@ -2,7 +2,7 @@ package com.example.restapi_subject.domain.auth.service;
 
 import com.example.restapi_subject.domain.auth.dto.AuthReq;
 import com.example.restapi_subject.domain.user.domain.User;
-import com.example.restapi_subject.domain.user.repository.InMemoryUserRepository;
+import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import org.junit.jupiter.api.Assertions;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.*;
 class AuthServiceTestSpringBootTest {
 
     @Autowired
-    private InMemoryUserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
     private AuthService authService;
 

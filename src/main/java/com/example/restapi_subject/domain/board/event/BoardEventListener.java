@@ -6,9 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BoardEventListener {
 
     /**
@@ -18,6 +20,7 @@ public class BoardEventListener {
 
     @Async
     @EventListener
+    @Transactional
     public void onCommentEvent(CommentEvent event) {
         boardRepository.update(event.boardId(), b -> {
             switch (event.type()) {
@@ -30,6 +33,7 @@ public class BoardEventListener {
 
     @Async
     @EventListener
+    @Transactional
     public void onBoardLikeEvent(BoardLikeEvent event) {
         boardRepository.update(event.boardId(), b -> {
             switch (event.type()) {

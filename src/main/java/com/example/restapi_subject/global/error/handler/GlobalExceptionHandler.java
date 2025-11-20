@@ -6,6 +6,7 @@ import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.ResponseUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,6 +33,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotReadable(HttpMessageNotReadableException ex) {
         return ResponseUtil.error(HttpStatus.BAD_REQUEST, ExceptionType.INVALID_JSON.getErrorMessage());
+    }
+
+    // DB 무결성 제약 위반 (ex: UNIQUE, FK 등)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.warn("⚠Data integrity violation: {}", ex.getMessage());
+
+        // 예외 메시지 기반으로 세분화 가능
+        if (ex.getMessage() != null && ex.getMessage().contains("board_like")) {
+            // 중복 좋아요 예외 처리
+            return ResponseUtil.error(ExceptionType.ALREADY_LIKED);
+        }
+
+        // 그 외 제약 조건 위반 (ex: FK 에러 등)
+        return ResponseUtil.error(HttpStatus.CONFLICT, ExceptionType.SERVER_ERROR.getErrorMessage());
     }
 
     // 커스텀 비즈니스 예외

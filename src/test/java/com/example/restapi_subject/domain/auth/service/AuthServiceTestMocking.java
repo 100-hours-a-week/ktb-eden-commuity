@@ -2,7 +2,7 @@ package com.example.restapi_subject.domain.auth.service;
 
 import com.example.restapi_subject.domain.auth.dto.AuthReq;
 import com.example.restapi_subject.domain.user.domain.User;
-import com.example.restapi_subject.domain.user.repository.InMemoryUserRepository;
+import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.PasswordUtil;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.times;
 class AuthServiceTestMocking {
 
     @Mock
-    private InMemoryUserRepository userRepository;
+    private UserRepository userRepository;
     @Mock
     private PasswordUtil passwordUtil;
 

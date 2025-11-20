@@ -1,6 +1,8 @@
-package com.example.restapi_subject.domain.board.repository;
+package com.example.restapi_subject.domain.board.repository.impl;
 
 import com.example.restapi_subject.domain.board.domain.Board;
+import com.example.restapi_subject.domain.board.repository.BoardRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -8,7 +10,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 
 @Repository
-public class InMemoryBoardRepository implements BoardRepository {
+@Profile("inmemory")
+public class InMemoryBoardRepositoryImpl implements BoardRepository {
 
     private final NavigableMap<Long, Board> store = new ConcurrentSkipListMap<>();
     protected final AtomicLong sequence = new AtomicLong(0);
@@ -77,8 +80,8 @@ public class InMemoryBoardRepository implements BoardRepository {
     }
 
     @Override
-    public void delete(Long id) {
-        store.remove(id);
+    public void delete(Board entity) {
+        store.remove(entity);
     }
 
     @Override

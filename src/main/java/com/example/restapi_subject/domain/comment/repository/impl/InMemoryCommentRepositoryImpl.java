@@ -1,15 +1,16 @@
-package com.example.restapi_subject.domain.comment.repository;
+package com.example.restapi_subject.domain.comment.repository.impl;
 
 import com.example.restapi_subject.domain.comment.domain.Comment;
+import com.example.restapi_subject.domain.comment.repository.CommentRepository;
 import com.example.restapi_subject.global.common.repository.BaseInMemoryRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
-public class InMemoryCommentRepository extends BaseInMemoryRepository<Comment> implements CommentRepository {
+@Profile("inmemory")
+public class InMemoryCommentRepositoryImpl extends BaseInMemoryRepository<Comment> implements CommentRepository {
 
     @Override
     public List<Comment> findByBoardIdPaged(Long boardId, int page, int size) {
