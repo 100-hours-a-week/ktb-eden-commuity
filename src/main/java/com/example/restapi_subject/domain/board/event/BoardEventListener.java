@@ -2,7 +2,10 @@ package com.example.restapi_subject.domain.board.event;
 
 import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.boardlike.event.BoardLikeEvent;
+import com.example.restapi_subject.domain.comment.event.CommentEvent;
+import com.example.restapi_subject.domain.user.event.UserEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -11,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@Slf4j
 public class BoardEventListener {
 
     /**
@@ -22,26 +26,33 @@ public class BoardEventListener {
     @EventListener
     @Transactional
     public void onCommentEvent(CommentEvent event) {
-        boardRepository.update(event.boardId(), b -> {
-            switch (event.type()) {
-                case CREATED -> b.increaseComment();
-                case DELETED -> b.decreaseComment();
-            }
-            return b;
-        });
+        int delta = switch (event.type()) {
+            case CREATED -> 1;
+            case DELETED -> -1;
+        };
+        boardRepository.updateCommentCount(event.boardId(), delta);
     }
 
     @Async
     @EventListener
     @Transactional
     public void onBoardLikeEvent(BoardLikeEvent event) {
-        boardRepository.update(event.boardId(), b -> {
-            switch (event.type()) {
-                case CREATED -> b.increaseLike();
-                case DELETED -> b.decreaseLike();
+        int delta = switch (event.type()) {
+            case CREATED -> 1;
+            case DELETED -> -1;
+        };
+        boardRepository.updateLikeCount(event.boardId(), delta);
+    }
+
+    @Async
+    @EventListener
+    @Transactional
+    public void onUserEvent(UserEvent event) {
+        switch (event.type()) {
+            case DELETED ->  {
+                boardRepository.softDeleteByUserId(event.userId());
             }
-            return b;
-        });
+        }
     }
 }
 

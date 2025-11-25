@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Comment extends BaseEntity {
@@ -15,14 +17,16 @@ public class Comment extends BaseEntity {
     private Long boardId;
     private Long authorId;
     private String content;
+    private boolean deleted;
 
     @Builder
-    private Comment(Long id, Long boardId, Long authorId, String content) {
-        super();
+    private Comment(Long id, Long boardId, Long authorId, String content, LocalDateTime createdDate, LocalDateTime updateDate, boolean deleted) {
+        super(createdDate, updateDate);
         this.id = id;
         this.boardId = boardId;
         this.authorId = authorId;
         this.content = content;
+        this.deleted = deleted;
     }
 
     public static Comment create(Long boardId, Long authorId, String content) {
@@ -40,10 +44,17 @@ public class Comment extends BaseEntity {
                 .boardId(this.boardId)
                 .authorId(this.authorId)
                 .content(this.content)
+                .deleted(this.deleted)
                 .build();
         c.id = id;
         return c;
     }
+
+    public void softDelete() {
+        this.deleted = true;
+        touch();
+    }
+
 
     public boolean canEdit(Long requesterId) { return this.authorId != null && this.authorId.equals(requesterId); }
 

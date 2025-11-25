@@ -8,12 +8,12 @@ import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 @Profile("jpa")
@@ -52,20 +52,30 @@ public class JpaCommentRepositoryImpl implements CommentRepository {
     public void delete(Comment comment) {
         CommentEntity existing = commentJpaRepository.findById(comment.getId())
                 .orElseThrow(() -> new CustomException(ExceptionType.COMMENT_NOT_FOUND));
-
         commentJpaRepository.delete(existing);
     }
 
     @Override
-    public List<Comment> findByBoardIdPaged(Long boardId, int page, int size) {
-        return commentJpaRepository.findByBoardId(boardId, PageRequest.of(page, size))
+    public List<Comment> findActiveByUserId(Long userId) {
+        return commentJpaRepository.findAllByAuthor_IdAndDeletedFalse(userId)
                 .stream()
                 .map(CommentEntity::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
-    public int countByBoardId(Long boardId) {
-        return commentJpaRepository.countByBoardId(boardId);
+    public void softDeleteById(Long commentId) {
+        commentJpaRepository.softDeleteById(commentId);
+    }
+
+    @Override
+    public void softDeleteByUserId(Long userId) {
+        commentJpaRepository.softDeleteByUserId(userId);
+    }
+
+    @Override
+    public Page<Comment> findByBoardId(Long boardId, Pageable pageable) {
+        return commentJpaRepository.findByBoardId(boardId, pageable)
+                .map(CommentEntity::toDomain);
     }
 }

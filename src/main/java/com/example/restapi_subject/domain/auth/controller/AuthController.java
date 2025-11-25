@@ -50,7 +50,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)  // 로컬 개발 false
                 .sameSite("Lax")
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(0)
                 .build();
         response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, cleared.toString());
@@ -72,7 +72,7 @@ public class AuthController {
                 .httpOnly(true)
                 .secure(false)  // 로컬 개발 false
                 .sameSite("Lax")
-                .path("/api/v1/auth")
+                .path("/")
                 .maxAge(java.time.Duration.ofDays(14))
                 .build();
         response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, rtCookie.toString());

@@ -1,6 +1,6 @@
 package com.example.restapi_subject.domain.comment.service;
 
-import com.example.restapi_subject.domain.board.event.CommentEvent;
+import com.example.restapi_subject.domain.comment.event.CommentEvent;
 import com.example.restapi_subject.domain.board.service.BoardValidator;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.dto.CommentReq;
@@ -35,21 +35,6 @@ public class CommentService {
         return CommentRes.CreateIdDto.of(saved.getId());
     }
 
-    public CommentRes.PageDto<CommentRes.CommentDto> list(Long boardId, int page, int size) {
-        boardValidator.ensureBoardExists(boardId);
-        if (page < 0) page = 0;
-        if (size <= 0) size = 10;
-
-        int totalElements = commentRepository.countByBoardId(boardId);
-        int totalPages = (totalElements + size - 1) / size;
-
-        List<CommentRes.CommentDto> items = commentRepository.findByBoardIdPaged(boardId, page, size)
-                .stream()
-                .map(CommentRes.CommentDto::from)
-                .toList();
-        return new CommentRes.PageDto<>(items, page, size, totalPages, totalElements);
-    }
-
     @Transactional
     public CommentRes.CommentDto update(Long boardId, Long commentId, Long requesterId, CommentReq.UpdateDto dto) {
         Comment c = getCommentOrThrow(commentId);
@@ -64,7 +49,7 @@ public class CommentService {
     public void delete(Long boardId, Long commentId, Long requesterId) {
         Comment c = getCommentOrThrow(commentId);
         checkEditableOrThrow(c, boardId, requesterId);
-        commentRepository.delete(c);
+        commentRepository.softDeleteById(commentId);
         eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.DELETED));
     }
 
@@ -80,6 +65,5 @@ public class CommentService {
     private void checkEditableOrThrow(Comment c, Long boardId, Long requesterId) {
         if (!c.canEdit(requesterId)) throw new CustomException(ExceptionType.ACCESS_DENIED);
         if (!c.getBoardId().equals(boardId)) throw new CustomException(ExceptionType.ACCESS_DENIED);
-        if (!c.canEdit(requesterId)) throw new CustomException(ExceptionType.ACCESS_DENIED);
     }
 }

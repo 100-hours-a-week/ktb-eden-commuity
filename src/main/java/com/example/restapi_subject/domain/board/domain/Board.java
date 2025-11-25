@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board extends BaseEntity {
@@ -21,10 +23,11 @@ public class Board extends BaseEntity {
     private int viewCount;
     private int likeCount;
     private int commentCount;
+    private boolean deleted;
 
     @Builder
-    private Board(Long id, Long authorId, String title, String content, String image, Integer viewCount, Integer likeCount, Integer commentCount) {
-        super();
+    private Board(Long id, Long authorId, String title, String content, String image, Integer viewCount, Integer likeCount, Integer commentCount, LocalDateTime createdDate, LocalDateTime updatedDate, boolean deleted) {
+        super(createdDate, updatedDate);
         this.id = id;
         this.authorId = authorId;
         this.title = title;
@@ -33,6 +36,7 @@ public class Board extends BaseEntity {
         this.viewCount = (viewCount == null ? 0 : viewCount);
         this.likeCount = (likeCount == null ? 0 : likeCount);
         this.commentCount = (commentCount == null ? 0 : commentCount);
+        this.deleted = deleted;
     }
 
     public static Board create(Long authorId, String title, String content, String image) {
@@ -55,10 +59,17 @@ public class Board extends BaseEntity {
                 .viewCount(this.viewCount)
                 .likeCount(this.likeCount)
                 .commentCount(this.commentCount)
+                .deleted(this.deleted)
                 .build();
         copy.id = id;
         return copy;
     }
+
+    public void softDelete() {
+        this.deleted = true;
+        touch();
+    }
+
     public void increaseView() { this.viewCount++; }
     public void increaseLike() { this.likeCount++; }
     public void decreaseLike() {

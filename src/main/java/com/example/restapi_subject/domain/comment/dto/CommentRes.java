@@ -13,16 +13,32 @@ public record CommentRes() {
             Long id,
             Long boardId,
             Long authorId,
+            String authorNickname,
+            String authorProfileImage,
             String content,
             LocalDateTime createdDate,
             LocalDateTime updatedDate
     ) {
+        public static CommentDto from(Comment c, String authorNickname, String authorProfileImage) {
+            return new CommentDto(
+                    c.getId(),
+                    c.getBoardId(),
+                    c.getAuthorId(),
+                    authorNickname,
+                    authorProfileImage,
+                    c.isDeleted() ? "삭제된 댓글 입니다." : c.getContent(),
+                    c.getCreatedDate(),
+                    c.getUpdatedDate()
+            );
+        }
         public static CommentDto from(Comment c) {
             return new CommentDto(
                     c.getId(),
                     c.getBoardId(),
                     c.getAuthorId(),
-                    c.getContent(),
+                    null,
+                    null,
+                    c.isDeleted() ? "삭제된 댓글 입니다." : c.getContent(),
                     c.getCreatedDate(),
                     c.getUpdatedDate()
             );

@@ -1,5 +1,7 @@
 package com.example.restapi_subject.domain.auth.jwt;
 
+import com.example.restapi_subject.domain.user.domain.User;
+import com.example.restapi_subject.domain.user.repository.UserRepository;
 import com.example.restapi_subject.global.common.response.ApiResponse;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.JwtUtil;
@@ -20,12 +22,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final UserRepository userRepository;
 
     private final Set<String> whiteList = Set.of(
             "/api/v1/auth/login",
             "/api/v1/auth/signup",
             "/api/v1/auth/refresh",
             "/api/v1/auth/logout",
+            "/api/v1/upload/",
+            "/uploads/",
             "/swagger-ui/",
             "/v3/api-docs/"
     );
@@ -34,8 +39,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final Pattern BOARD_DETAIL = Pattern.compile("^/api/v1/boards/\\d+$");
     private static final Pattern BOARD_COMMENTS = Pattern.compile("^/api/v1/boards/\\d+/comments$");
 
-    public JwtAuthFilter(JwtUtil jwtUtil) {
+    public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -71,6 +77,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         Long userId = jwtUtil.getUserId(token);
+
+        User user = userRepository.findById(userId)
+                .orElse(null);
+        if (user == null) {
+            writeError(response, ExceptionType.USER_NOT_FOUND);
+            return;
+        }
+        if (user.isDeleted()) {
+            writeError(response, ExceptionType.USER_ALREADY_DELETED);
+            return;
+        }
+
         request.setAttribute("userId", userId);
         filterChain.doFilter(request, response);
     }

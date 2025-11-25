@@ -8,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 @Profile("jpa")
@@ -37,6 +39,13 @@ public class JpaUserRepositoryImpl implements UserRepository {
     @Override
     public void clear() {
         userJpaRepository.deleteAll();
+    }
+
+    @Override
+    public List<User> findAllByIdIn(Set<Long> ids) {
+        return userJpaRepository.findAllByIdIn(ids).stream()
+                .map(UserEntity::toDomain)
+                .toList();
     }
 
     @Override

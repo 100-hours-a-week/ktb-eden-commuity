@@ -87,6 +87,7 @@ public class UserEntity extends JpaBaseEntity {
                 .password(this.password)
                 .nickname(this.nickname)
                 .profileImage(this.profileImage)
+                .deleted(this.deleted)
                 .build();
     }
 }

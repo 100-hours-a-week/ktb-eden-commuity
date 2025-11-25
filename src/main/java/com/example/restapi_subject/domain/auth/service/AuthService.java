@@ -76,8 +76,9 @@ public class AuthService {
     }
 
     @Transactional
-    public void deleteRefreshToken(Long userId, AuthReq.DeleteRefreshTokenDto dto) {
-        User user = authenticateUser(userId, dto);
+    public void deleteRefreshToken(Long userId) {
+        userRepository.findById(userId)
+                        .orElseThrow(() -> new CustomException(ExceptionType.USER_NOT_FOUND));
         refreshTokenStore.delete(userId);
     }
 

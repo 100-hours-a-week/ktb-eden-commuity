@@ -41,6 +41,10 @@ public class LoginFilter extends OncePerRequestFilter {
 
             AuthRes.LoginDto loginRes = authService.login(dto);
 
+            if (loginRes == null || loginRes.tokenDto() == null) {
+                throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
+            }
+
             response.setHeader("Authorization", "Bearer " + loginRes.tokenDto().accessToken());
             response.addHeader("Access-Control-Expose-Headers", "Authorization");
 
@@ -48,7 +52,7 @@ public class LoginFilter extends OncePerRequestFilter {
                     .httpOnly(true)
                     .secure(false) // 로컬개발 false
                     .sameSite("Lax")
-                    .path("/api/v1/auth")
+                    .path("/")
                     .maxAge(Duration.ofDays(14))
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());

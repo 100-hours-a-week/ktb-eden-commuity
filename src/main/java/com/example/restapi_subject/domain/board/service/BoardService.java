@@ -26,10 +26,8 @@ public class BoardService {
 
     @Transactional
     public Board getBoardAndIncreaseViewOrThrow(Long boardId) {
-        return boardRepository.update(boardId, cur -> {
-                    cur.increaseView();
-                    return cur;
-                })
+        boardRepository.updateViewCount(boardId, 1);
+        return boardRepository.findById(boardId)
                 .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
     }
 
@@ -50,7 +48,7 @@ public class BoardService {
     public void delete(Long boardId, Long requesterId) {
         Board b = getBoardOrThrow(boardId);
         checkAuthorOrThrow(requesterId, b);
-        boardRepository.delete(b);
+        boardRepository.softDeleteById(boardId);
     }
 
     /**

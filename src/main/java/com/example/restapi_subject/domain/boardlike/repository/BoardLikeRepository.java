@@ -9,6 +9,8 @@ public interface BoardLikeRepository {
     boolean remove(Long boardId, Long userId);
     boolean exists(Long boardId, Long userId);
     int countByBoardId(Long boardId);
+    void deleteByUserId(Long userId);
     Set<Long> findAllByUserIdAndBoardIds(List<Long> boardIds, Long userId);
 
+    List<Long> findActiveBoardIdsByUserId(Long userId);
 }

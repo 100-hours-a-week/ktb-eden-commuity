@@ -23,4 +23,13 @@ public record UserRes() {
             return new UpdateProfileDto(u.getId(), u.getNickname(), u.getProfileImage());
         }
     }
+
+    public record SimpleProfileDto(
+            String nickname,
+            String profileImage
+    ) {
+        public static SimpleProfileDto from(User u) {
+            return new SimpleProfileDto(u.getNickname(), u.getProfileImage());
+        }
+    }
 }
