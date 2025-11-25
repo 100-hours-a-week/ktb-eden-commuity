@@ -11,7 +11,7 @@ public interface UserRepository {
     Optional<User> findById(Long id);
     void delete(User user);
     void clear();
-    List<User> findAllById(Set<Long> ids);
+    List<User> findAllByIdIn(Set<Long> ids);
     Optional<User> findByEmail(String email);
     Optional<User> findByNickname(String nickname);
     boolean existsByNickname(String nickname);

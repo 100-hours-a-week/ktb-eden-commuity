@@ -36,7 +36,7 @@ public class UserService {
 
     public Map<Long, UserRes.SimpleProfileDto> getProfilesByIds(Set<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) return Map.of();
-        return userRepository.findAllById(userIds).stream()
+        return userRepository.findAllByIdIn(userIds).stream()
                 .collect(Collectors.toMap(
                         User::getId,
                         UserRes.SimpleProfileDto::from

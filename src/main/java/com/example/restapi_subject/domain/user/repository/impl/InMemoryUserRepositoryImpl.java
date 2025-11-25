@@ -99,7 +99,7 @@ public class InMemoryUserRepositoryImpl extends BaseInMemoryRepository<User> imp
     }
 
     @Override
-    public List<User> findAllById(Set<Long> ids) {
+    public List<User> findAllByIdIn(Set<Long> ids) {
         if (ids == null || ids.isEmpty()) return List.of();
         return store.values().stream()
                 .filter(u -> ids.contains(u.getId()))

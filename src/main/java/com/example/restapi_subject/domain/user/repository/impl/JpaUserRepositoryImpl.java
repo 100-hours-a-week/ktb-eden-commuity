@@ -42,14 +42,11 @@ public class JpaUserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findAllById(Set<Long> ids) {
-        if (ids == null || ids.isEmpty()) return List.of();
-        return userJpaRepository.findAllById(ids)
-                .stream()
+    public List<User> findAllByIdIn(Set<Long> ids) {
+        return userJpaRepository.findAllByIdIn(ids).stream()
                 .map(UserEntity::toDomain)
                 .toList();
     }
-
 
     @Override
     public Optional<User> findByEmail(String email) {
