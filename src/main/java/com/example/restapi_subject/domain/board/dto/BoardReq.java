@@ -19,8 +19,8 @@ public class BoardReq {
     @Schema(name = "BoardReqUpdateDto")
     public static record UpdateDto(
             @Size(max = 26, message = "title_max_26")
-            String content,
             String title,
+            String content,
             String image
     ) {}
 }
