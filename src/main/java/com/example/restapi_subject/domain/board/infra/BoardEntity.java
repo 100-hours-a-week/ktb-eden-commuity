@@ -27,7 +27,7 @@ public class BoardEntity extends JpaBaseEntity {
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String content;
 
     private String image;
