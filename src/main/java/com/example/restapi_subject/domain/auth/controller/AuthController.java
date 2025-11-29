@@ -6,16 +6,23 @@ import com.example.restapi_subject.domain.auth.service.AuthService;
 import com.example.restapi_subject.global.common.response.ApiResponse;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
+import com.example.restapi_subject.global.util.JwtUtil;
 import com.example.restapi_subject.global.util.ResponseUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+
+import static org.springframework.http.HttpHeaders.*;
 
 @Slf4j
 @RestController
@@ -34,9 +41,27 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "AuthReq.LoginDto 기반으로 로그인합니다.")
-    public ResponseEntity<ApiResponse<AuthRes.LoginDto>> login(@RequestBody AuthReq.LoginDto loginDto){
-        // LoginFilter 로 대체
-        return null;
+    public ApiResponse<AuthRes.LoginDto> login(
+            @RequestBody AuthReq.LoginDto loginDto,
+            HttpServletResponse response){
+        AuthRes.LoginDto loginRes = authService.login(loginDto);
+
+        if (loginRes == null || loginRes.tokenDto() == null) {
+            throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
+        }
+        response.setHeader("Authorization", "Bearer " + loginRes.tokenDto().accessToken());
+        response.addHeader("Access-Control-Expose-Headers", "Authorization");
+
+        ResponseCookie rtCookie = ResponseCookie.from("refreshToken", loginRes.tokenDto().refreshToken())
+                .httpOnly(true)
+                .secure(false) // 로컬개발 false
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofDays(14))
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, rtCookie.toString());
+
+        return ApiResponse.ok("login_success", loginRes);
     }
 
     @PostMapping("/logout")
@@ -53,17 +78,21 @@ public class AuthController {
                 .path("/")
                 .maxAge(0)
                 .build();
-        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, cleared.toString());
+        response.addHeader(SET_COOKIE, cleared.toString());
         return ApiResponse.ok("logout_success", null);
     }
 
     @PostMapping("/refresh")
-    @Operation(summary = "토큰 갱신", description = "토큰(RT)기반으로 새 토큰을 받습니다.")
-    public ApiResponse<AuthRes.TokenDto> refresh(HttpServletRequest request, HttpServletResponse response) {
+    @Operation(summary = "토큰 갱신", description = "RTR기반 새 토큰을 받습니다.")
+    public ApiResponse<AuthRes.TokenDto> refresh(
+            @Parameter(hidden = true)
+            @RequestHeader(value = AUTHORIZATION, required = false) String accessToken,
+            HttpServletRequest request, HttpServletResponse response) {
+        String extractedAt = JwtUtil.extractBearer(accessToken);
         String rt = authService.extractRefresh(request)
                 .orElseThrow(() -> new CustomException(ExceptionType.TOKEN_MISSING));
 
-        AuthRes.TokenDto tokens = authService.refresh(rt);
+        AuthRes.TokenDto tokens = authService.refresh(extractedAt, rt);
 
         response.setHeader("Authorization", "Bearer " + tokens.accessToken());
         response.addHeader("Access-Control-Expose-Headers", "Authorization");
@@ -75,7 +104,7 @@ public class AuthController {
                 .path("/")
                 .maxAge(java.time.Duration.ofDays(14))
                 .build();
-        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, rtCookie.toString());
+        response.addHeader(SET_COOKIE, rtCookie.toString());
 
         return ApiResponse.ok("token_refreshed_success", tokens);
     }

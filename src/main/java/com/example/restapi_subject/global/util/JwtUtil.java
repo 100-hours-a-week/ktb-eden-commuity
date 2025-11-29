@@ -2,6 +2,7 @@ package com.example.restapi_subject.global.util;
 
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -91,6 +92,8 @@ public class JwtUtil {
         try {
             String sub = parser.parseSignedClaims(token).getPayload().getSubject();
             return Long.parseLong(sub);
+        } catch (ExpiredJwtException e) {
+            throw e;
         } catch (JwtException | NumberFormatException e) {
             throw new CustomException(ExceptionType.TOKEN_INVALID);
         }
@@ -105,5 +108,13 @@ public class JwtUtil {
         if (authorization == null) return null;
         String prefix = "Bearer ";
         return authorization.startsWith(prefix) ? authorization.substring(prefix.length()).trim() : null;
+    }
+
+    public Long extractUserIdAllowExpired(String token) {
+        try {
+            return getUserId(token);
+        } catch (ExpiredJwtException e) {
+            return Long.valueOf(e.getClaims().getSubject());
+        }
     }
 }

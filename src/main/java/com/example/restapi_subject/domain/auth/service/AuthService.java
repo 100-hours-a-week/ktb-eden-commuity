@@ -28,6 +28,7 @@ public class AuthService {
     private final PasswordUtil passwordUtil;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenStore;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public Long signUp(AuthReq.SignUpDto signUpDto) {
@@ -60,9 +61,11 @@ public class AuthService {
     }
 
     @Transactional
-    public AuthRes.TokenDto refresh(String refreshToken) {
+    public AuthRes.TokenDto refresh(String accessToken, String refreshToken) {
+        if (accessToken == null) throw new CustomException(ExceptionType.TOKEN_MISSING);
+        Long userId = jwtUtil.extractUserIdAllowExpired(accessToken);
+        checkRefreshTokenStolen(refreshToken, userId);
         validateRefreshToken(refreshToken);
-        Long userId = jwtUtil.getUserId(refreshToken);
 
         String newRt = rotateRefreshToken(refreshToken, userId);
         String newAt = jwtUtil.createAccessToken(userId);
@@ -71,7 +74,6 @@ public class AuthService {
 
     public Optional<String> extractRefresh(HttpServletRequest request) {
         return extractFromHeaderXRefresh(request)
-                .or(() -> extractFromAuthorization(request))
                 .or(() -> extractFromCookies(request));
     }
 
@@ -116,7 +118,10 @@ public class AuthService {
     private String rotateRefreshToken(String refreshToken, Long userId) {
         String newRt = jwtUtil.createRefreshToken(userId);
         boolean swapped = refreshTokenStore.compareAndSet(userId, refreshToken, newRt);
-        if (!swapped) throw new CustomException(ExceptionType.TOKEN_INVALID);
+        if (!swapped) {
+            refreshTokenService.deleteForce(userId);
+            throw new CustomException(ExceptionType.TOKEN_STOLEN);
+        }
         return newRt;
     }
 
@@ -161,6 +166,7 @@ public class AuthService {
             throw new CustomException(ExceptionType.TOKEN_INVALID);
         }
         if (jwtUtil.isExpired(refreshToken)) {
+            deleteRefreshToken(jwtUtil.getUserId(refreshToken));
             throw new CustomException(ExceptionType.TOKEN_EXPIRED);
         }
         if (!jwtUtil.isRefresh(refreshToken)) {
@@ -168,4 +174,12 @@ public class AuthService {
         }
     }
 
+    private void checkRefreshTokenStolen(String refreshToken, Long userId) {
+        String savedRt = refreshTokenStore.get(userId)
+                .orElseThrow(() -> new CustomException(ExceptionType.TOKEN_NOT_FOUND));
+        if (!savedRt.equals(refreshToken)) {
+            refreshTokenService.deleteForce(userId);
+            throw new CustomException(ExceptionType.TOKEN_STOLEN);
+        }
+    }
 }
