@@ -16,13 +16,15 @@ public final class ResponseUtil {
     }
     public static <T> ResponseEntity<ApiResponse<T>> created(String message, T data) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.ok(message, data));
+                .body(ApiResponse.created(message, data));
     }
 
-    public static ResponseEntity<ApiResponse<Void>> error(HttpStatus status, String message) {
-        return ResponseEntity.status(status).body(ApiResponse.error(message));
+    public static ResponseEntity<ApiResponse<Void>> error(HttpStatus status, String code, String message) {
+        return ResponseEntity.status(status)
+                .body(ApiResponse.error(code, message));
     }
     public static ResponseEntity<ApiResponse<Void>> error(ExceptionType type) {
-        return error(type.getHttpStatus(), type.getErrorMessage());
+        return ResponseEntity.status(type.getHttpStatus())
+                        .body(ApiResponse.error(type.getErrorCode(), type.getErrorMessage()));
     }
 }
