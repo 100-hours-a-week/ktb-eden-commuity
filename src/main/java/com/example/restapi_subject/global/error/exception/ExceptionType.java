@@ -50,9 +50,14 @@ public enum ExceptionType {
     COMMENT_NOT_FOUND("C001", "comment_not_found", HttpStatus.NOT_FOUND),
     COMMENT_ALREADY_CREATED("C002", "comment_already_created", HttpStatus.CONFLICT),
 
+    // FILE
+    FILE_SAVE_FAILED("F001", "file_save_failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    FILE_SIZE_EXCEEDED("F002", "file_size_exceeded", HttpStatus.BAD_REQUEST),
+    FILE_EXTENSION_NOT_ALLOWED("F003", "file_extension_not_allowed", HttpStatus.BAD_REQUEST),
+    FILE_EMPTY("F004", "file_empty", HttpStatus.BAD_REQUEST),
+
     // ETC
-    FILE_EMPTY("S001", "file_empty", HttpStatus.BAD_REQUEST),
-    INVALID_JSON("S002", "invalid_json", HttpStatus.BAD_REQUEST),
+    INVALID_JSON("S001", "invalid_json", HttpStatus.BAD_REQUEST),
     SERVER_ERROR("S999", "internal_server_error",HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String errorCode;

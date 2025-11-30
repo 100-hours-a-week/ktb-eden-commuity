@@ -1,7 +1,7 @@
 spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ktb_community?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true&useSSL=false
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/ktb_community?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Seoul&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true&useSSL=false
 
   jpa:
     hibernate:
@@ -22,6 +22,11 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+file:
+#  upload-dir: uploads
+#  base-url: http://localhost:8080/uploads
+  allowed-ext: png,jpg,jpeg,gif,webp
+  max-size-mb: 5
 
 logging:
   level:
