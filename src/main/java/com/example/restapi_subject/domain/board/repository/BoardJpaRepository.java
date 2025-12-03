@@ -9,12 +9,40 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BoardJpaRepository extends JpaRepository<BoardEntity, Long> {
 
     @Query("SELECT b from BoardEntity b where b.deleted = false AND (:cursorId IS null OR b.id < :cursorId) order by b.id DESC ")
     List<BoardEntity> findAllByCursor(@Param("cursorId") Long cursorId, Pageable pageable);
+
+    @Query("""
+        SELECT b FROM BoardEntity b
+        JOIN FETCH b.author
+        WHERE b.deleted = false
+          AND (:cursorId IS NULL OR b.id < :cursorId)
+        ORDER BY b.id DESC
+    """)
+    List<BoardEntity> findBoardsWithAuthor(Long cursorId, int limit);
+
+    @Query("""
+        SELECT b FROM BoardEntity b
+        JOIN FETCH b.author
+        WHERE b.id = :boardId
+    """)
+    Optional<BoardEntity> findBoardWithAuthor(Long boardId);
+
+    @Query("""
+        SELECT DISTINCT b
+        FROM BoardEntity b
+        JOIN FETCH b.author a
+        LEFT JOIN FETCH b.comments c
+        LEFT JOIN FETCH c.author ca
+        WHERE b.id = :boardId
+          AND b.deleted = false
+    """)
+    Optional<BoardEntity> findBoardWithDetail(@Param("boardId") Long boardId);
 
     /**
      * 게시글 단일 삭제

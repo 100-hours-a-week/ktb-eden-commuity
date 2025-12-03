@@ -27,13 +27,11 @@ public class BoardService {
     @Transactional
     public Board getBoardAndIncreaseViewOrThrow(Long boardId) {
         boardRepository.updateViewCount(boardId, 1);
-        return boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
+        return boardRepository.findByIdOrThrow(boardId);
     }
 
     public Board getBoardOrThrow(Long boardId) {
-        return boardRepository.findById(boardId)
-                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
+        return boardRepository.findByIdOrThrow(boardId);
     }
 
     @Transactional

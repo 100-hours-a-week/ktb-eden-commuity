@@ -1,6 +1,8 @@
 package com.example.restapi_subject.domain.board.infra;
 
 import com.example.restapi_subject.domain.board.domain.Board;
+import com.example.restapi_subject.domain.comment.domain.Comment;
+import com.example.restapi_subject.domain.comment.infra.CommentEntity;
 import com.example.restapi_subject.domain.user.infra.UserEntity;
 import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
 import jakarta.persistence.*;
@@ -8,6 +10,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "board")
@@ -40,6 +45,9 @@ public class BoardEntity extends JpaBaseEntity {
 
     @Column(nullable = false)
     private int commentCount = 0;
+
+    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
+    private List<CommentEntity> comments = new ArrayList<>();
 
     private boolean deleted = false;
 
@@ -90,6 +98,27 @@ public class BoardEntity extends JpaBaseEntity {
                 .commentCount(this.commentCount)
                 .createdDate(this.getCreatedDate())
                 .updatedDate(this.getUpdatedDate())
+                .deleted(this.deleted)
+                .build();
+    }
+
+    public Board toDomainWithComments() {
+        List<Comment> commentDomains = this.comments.stream()
+                .map(CommentEntity::toDomain)
+                .toList();
+
+        return Board.builder()
+                .id(this.id)
+                .authorId(this.author.getId())
+                .title(this.title)
+                .content(this.content)
+                .image(this.image)
+                .viewCount(this.viewCount)
+                .likeCount(this.likeCount)
+                .commentCount(this.commentCount)
+                .createdDate(this.getCreatedDate())
+                .updatedDate(this.getUpdatedDate())
+                .comments(commentDomains)
                 .deleted(this.deleted)
                 .build();
     }

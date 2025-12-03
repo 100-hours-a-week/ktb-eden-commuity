@@ -63,7 +63,7 @@ public class BoardManagementFacade {
     }
 
     private PageCursor<Board> listByCursor(Long cursorId, int pageSize) {
-        List<Board> rows = boardRepository.findAllByCursor(cursorId, pageSize);
+        List<Board> rows = boardRepository.findPage(cursorId, pageSize);
 
         boolean hasNext = rows.size() > pageSize;
         if (hasNext) rows = rows.subList(0, pageSize);
