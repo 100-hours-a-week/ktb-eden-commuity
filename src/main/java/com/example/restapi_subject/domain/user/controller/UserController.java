@@ -33,7 +33,6 @@ public class UserController {
         return ApiResponse.ok("user_profile_update_success", userService.updateProfile(userId, dto));
     }
 
-    // TODO : 업데이트 시 RT 무효화?
     @PatchMapping("/password")
     @Operation(summary = "비밀번호 업데이트", description = "토큰(AT)검증후 비밀번호를 수정합니다.")
     public ApiResponse<Void> changePassword(

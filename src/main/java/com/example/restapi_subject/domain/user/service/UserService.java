@@ -64,6 +64,7 @@ public class UserService {
         validateNewPassword(user, dto);
         String hashed = passwordUtil.hash(dto.newPassword());
         user.changePasswordHashed(hashed);
+        authService.deleteRefreshToken(userId);
         userRepository.save(user);
     }
 
