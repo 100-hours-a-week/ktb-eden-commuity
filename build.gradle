@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -12,6 +13,10 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
+}
+
+jacoco {
+    toolVersion = "0.8.10"
 }
 
 configurations {
@@ -53,4 +58,66 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn tasks.test
+    mustRunAfter tasks.test
+
+    reports {
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        '**/dto/**',
+                        '**/*Dto*',
+                        '**/*Request*',
+                        '**/*Response*',
+
+                        '**/domain/**/domain/**',
+                        '**/*Entity*',
+
+                        '**/*Repository*',
+                        '**/repository/**',
+
+                        '**/*Config*',
+                        '**/*Configuration*',
+                        '**/*Properties*',
+
+                        '**/error/**',
+                        '**/*Exception*',
+
+                        '**/util/**',
+                        '**/*Util*',
+
+                        '**/*OpenApi*',
+                        '**/*Swagger*',
+
+
+                        '**/*$*',            // synthetic lambda/internal class
+                        '**/*Lambda*',
+                        '**/*Generated*'
+                ])
+            })
+    )
+    doLast {
+        def xmlFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+
+        if (xmlFile.exists()) {
+            println "Fixing Jacoco XML: ${xmlFile}"
+            xmlFile.text = xmlFile.text.replaceAll(
+                    /<method[^>]*name="lambda[^>]*>[\s\S]*?<\/method>/,
+                    ""
+            )
+        }
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
 }
