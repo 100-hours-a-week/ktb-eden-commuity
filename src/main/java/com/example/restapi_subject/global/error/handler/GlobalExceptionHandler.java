@@ -81,6 +81,9 @@ public class GlobalExceptionHandler {
 
             case "profileImage_required" -> ExceptionType.PROFILE_IMAGE_REQUIRED;
 
+            case "new_password_required" -> ExceptionType.PASSWORD_REQUIRED;
+            case "new_password_confirm_required" -> ExceptionType.PASSWORD_CONFIRM_REQUIRED;
+
             default -> ExceptionType.SERVER_ERROR;
         };
     }

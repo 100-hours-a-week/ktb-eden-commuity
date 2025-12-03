@@ -62,7 +62,7 @@ public class AuthService {
 
     @Transactional
     public AuthRes.TokenDto refresh(String accessToken, String refreshToken) {
-        if (accessToken == null) throw new CustomException(ExceptionType.TOKEN_MISSING);
+        if (accessToken == null || accessToken.isBlank()) throw new CustomException(ExceptionType.TOKEN_MISSING);
         Long userId = jwtUtil.extractUserIdAllowExpired(accessToken);
         checkRefreshTokenStolen(refreshToken, userId);
         validateRefreshToken(refreshToken);
@@ -90,15 +90,6 @@ public class AuthService {
 
     private User authenticateUser(AuthReq.LoginDto dto) {
         User user = userRepository.findByEmail(dto.email())
-                .orElseThrow(() -> new CustomException(ExceptionType.USER_NOT_FOUND));
-        if (!passwordUtil.matches(dto.password(), user.getPassword())) {
-            throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
-        }
-        return user;
-    }
-
-    private User authenticateUser(Long userId, AuthReq.DeleteRefreshTokenDto dto) {
-        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ExceptionType.USER_NOT_FOUND));
         if (!passwordUtil.matches(dto.password(), user.getPassword())) {
             throw new CustomException(ExceptionType.INVALID_CREDENTIALS);
@@ -134,11 +125,6 @@ public class AuthService {
             }
         }
         return Optional.empty();
-    }
-
-    private Optional<String> extractFromAuthorization(HttpServletRequest request) {
-        String fromAuth = JwtUtil.extractBearer(request.getHeader("Authorization"));
-        return (fromAuth != null) ? Optional.of(fromAuth) : Optional.empty();
     }
 
     private Optional<String> extractFromHeaderXRefresh(HttpServletRequest request) {
