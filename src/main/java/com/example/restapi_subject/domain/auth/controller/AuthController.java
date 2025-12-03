@@ -41,7 +41,7 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "AuthReq.LoginDto 기반으로 로그인합니다.")
     public ApiResponse<AuthRes.LoginDto> login(
-            @RequestBody AuthReq.LoginDto loginDto,
+            @RequestBody @Valid AuthReq.LoginDto loginDto,
             HttpServletResponse response){
         AuthRes.LoginDto loginRes = authService.login(loginDto);
         tokenResponseWriter.writeAuthTokens(response, loginRes.tokenDto());

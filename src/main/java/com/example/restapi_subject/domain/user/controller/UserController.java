@@ -4,12 +4,11 @@ import com.example.restapi_subject.domain.user.dto.UserReq;
 import com.example.restapi_subject.domain.user.dto.UserRes;
 import com.example.restapi_subject.domain.user.service.UserService;
 import com.example.restapi_subject.global.common.response.ApiResponse;
+import com.example.restapi_subject.global.util.TokenResponseWriter;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+    private final TokenResponseWriter tokenResponseWriter;
 
     @GetMapping
     @Operation(summary = "내정보 조회", description = "토큰(AT)기반으로 내정보를 조회합니다.")
@@ -50,14 +50,7 @@ public class UserController {
             HttpServletResponse response
     ) {
         userService.deleteAccount(userId);
-        ResponseCookie cleared = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(false) // 로컬 개발 시 false
-                .sameSite("Lax")
-                .path("/api/v1/auth")
-                .maxAge(0)
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cleared.toString());
+        tokenResponseWriter.clearRefreshToken(response);
         return ApiResponse.ok("user_deleted_success", null);
     }
 }
