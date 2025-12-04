@@ -277,7 +277,7 @@ Spring Data JPA
 
 ### ✔ Soft Delete 기반 회원탈퇴
 + 삭제 회원의 데이터는 즉시 식별 불가능하게 변환<br />
-(email → deleted_{{uuid}}, nickname → 탈퇴한 사용자)
+(`email → deleted_{{uuid}}`, `nickname → 탈퇴한 사용자`)
 + 연관된 게시글/댓글 Soft Delete 처리
 
 
@@ -288,7 +288,7 @@ Spring Data JPA
 + 이미지 업로드 (Multipart + 로컬 스토리지)
 
 ### ✔ 무한스크롤 기반 Cursor Pagination
-+ Offset 기반이 아닌 커서 기반 페이지네이션 적용
++ Offset 기반이 아닌 **커서 기반 페이지네이션** 적용
 + 게시글 ID 기준으로 더 효율적인 조회 성능 달성
 
 ### ✔ 게시글 상세 정보
@@ -299,18 +299,18 @@ Spring Data JPA
 
 ### ✔ N+1 문제 해결
 + 게시글 목록 조회: JOIN FETCH author
-+ 게시글 단건 조회: 게시글 + 작성자 + 댓글 + 댓글 작성자 <br />
++ 게시글 단건 조회: **게시글 + 작성자 + 댓글 + 댓글 작성자** <br />
 모두 fetch join으로 한 번에 조회
 + 댓글 로딩 방식은 사용 시점에 따라 전략적으로 분리 가능
 
 ## 💬 3. 댓글(Comment) 기능
 ### ✔ 댓글 CRUD
 + 댓글 생성, 수정, 삭제
-+ Soft Delete 적용 → “삭제된 댓글입니다.”로 표시
++ Soft Delete 적용 
 
 ### ✔ 페이지네이션 적용
 + 댓글은 별도 API로 페이지 단위 조회
-+ CommentManagementFacade에서 작성자 프로필 batch 조회하여 N+1 방지
++ `CommentManagementFacade`에서 작성자 프로필 batch 조회하여 N+1 방지
 
 ### ✔ 작성자 프로필 매핑
 + 댓글 작성자의 닉네임, 프로필 이미지 포함하여 반환
@@ -319,8 +319,8 @@ Spring Data JPA
 ## ❤️ 4. 좋아요(Like) 기능
 ### ✔ 게시글 좋아요 / 좋아요 취소
 + 좋아요 추가/삭제 시 DL(도메인 이벤트) 구조로 count 업데이트
-+ 좋아요한 게시글 ID 목록을 한 번에 조회하여
-+ 게시글 리스트 likedByMe 처리 → N+1 방지
++ 좋아요한 게시글 ID 목록을 한 번에 조회하여< br/>
+  **게시글 리스트 likedByMe 처리 → N+1 방지**
 
 
 ## 👤 5. 사용자(User) 기능
@@ -353,18 +353,5 @@ Spring Data JPA
 + CommentEventListener
 + LikeEvent 처리 구조<br />
 → count 증가/감소 로직을 Event 기반으로 모듈화
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
