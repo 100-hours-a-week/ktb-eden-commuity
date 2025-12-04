@@ -279,6 +279,7 @@ Spring Data JPA
 + 삭제 회원의 데이터는 즉시 식별 불가능하게 변환<br />
 (`email → deleted_{{uuid}}`, `nickname → 탈퇴한 사용자`)
 + 연관된 게시글/댓글 Soft Delete 처리
++ 연관된 좋아요 삭제
 
 
 ## 📰 2. 게시글(Board) 기능
@@ -349,9 +350,10 @@ Spring Data JPA
 → DIP 기반의 확장 가능한 구조
 
 ### ✔ 이벤트 기반 설계
-+ BoardEventListener
-+ CommentEventListener
-+ LikeEvent 처리 구조<br />
-→ count 증가/감소 로직을 Event 기반으로 모듈화
++ UserEvent, BoardEventListener 등을 통해 <br />
+**사용자 탈퇴 시 게시글 Soft Delete** 같은 도메인 이벤트 처리
+
++ 좋아요/댓글 카운트는 **정합성을 위해 동기 트랜잭션 내 업데이트**로 설계하고, <br />
+이벤트는 추후 **알림, 통계 집계, 로그 적재** 등 비동기 업무에 확장 가능하도록 남겨둠
 
 
