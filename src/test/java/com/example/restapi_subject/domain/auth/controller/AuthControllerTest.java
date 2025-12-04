@@ -42,7 +42,7 @@ class AuthControllerTest {
     private AuthService authService;
 
     @Test
-    @DisplayName("회원가입 성공 - register_success 반환")
+    @DisplayName("회원가입 성공 - status:201")
     void signUp_success() throws Exception {
         // given
         String body = """
@@ -65,12 +65,11 @@ class AuthControllerTest {
                 )
                 // then
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.message").value("register_success"))
                 .andExpect(jsonPath("$.data.user_id").value(1L));
     }
 
     @Test
-    @DisplayName("로그인 성공 - login_success 반환")
+    @DisplayName("로그인 성공 - status:200")
     void login_success() throws Exception {
         // given
         AuthRes.TokenDto tokenDto = new AuthRes.TokenDto("newAT", "newRT");
@@ -93,14 +92,13 @@ class AuthControllerTest {
         )
                 // then
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("login_success"))
                 .andExpect(jsonPath("$.data.user_id").value(1L));
 
         Mockito.verify(tokenResponseWriter).writeAuthTokens(any(), eq(tokenDto));
     }
 
     @Test
-    @DisplayName("로그아웃 성공 - logout_success 반환")
+    @DisplayName("로그아웃 성공 - status:200")
     void logout_success() throws Exception {
         // given
         String refreshToken = "mock-refresh-token";
@@ -117,8 +115,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
         )
                 // then
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("logout_success"));
+                .andExpect(status().isOk());
 
         // RT 추출
         Mockito.verify(authService, Mockito.times(1))
@@ -134,7 +131,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("토큰갱신 성공 - token_refreshed_success 반환")
+    @DisplayName("토큰갱신 성공 - status:200")
     void refresh_success() throws Exception {
         //given
         String accessToken = "Bearer oldAccessToken";
@@ -157,7 +154,6 @@ class AuthControllerTest {
         )
                 //then
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.message").value("token_refreshed_success"))
                 .andExpect(jsonPath("$.data.access_token").value("new-access-token"))
                 .andExpect(jsonPath("$.data.refresh_token").value("new-refresh-token"));
 
@@ -172,7 +168,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - email_required")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU011")
     void signUp_fail_email_required() throws Exception {
         // given
         String body = """
@@ -199,7 +195,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - email_invalid")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU010")
     void signUp_fail_email_invalid() throws Exception {
         // given
         String body_abc = """
@@ -226,7 +222,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - password_required")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU012")
     void signUp_fail_password_required() throws Exception {
         // given
         String body = """
@@ -253,7 +249,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - password_rule_violation")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU016")
     void signUp_fail_password_rule_violation() throws Exception {
         //given
         String body = """
@@ -279,7 +275,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - passwordConfirm_required")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU013")
     void signUp_fail_passwordConfirm_required() throws Exception {
         //given
         String body = """
@@ -305,7 +301,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("회원가입 실패 - nickname_required")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU014")
     void signUp_fail_nickname_required() throws Exception {
         //given
         String body = """
@@ -330,7 +326,7 @@ class AuthControllerTest {
         Mockito.verify(authService, never()).signUp(any());
     }
     @Test
-    @DisplayName("회원가입 실패 - nickname_max_10")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU018")
     void signUp_fail_nickname_max_10() throws Exception {
         //given
         String body = """
@@ -355,7 +351,7 @@ class AuthControllerTest {
         Mockito.verify(authService, never()).signUp(any());
     }
     @Test
-    @DisplayName("회원가입 실패 - nickname_no_space")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU017")
     void signUp_fail_nickname_no_space() throws Exception {
         //given
         String body = """
@@ -380,7 +376,7 @@ class AuthControllerTest {
         Mockito.verify(authService, never()).signUp(any());
     }
     @Test
-    @DisplayName("회원가입 실패 - profileImage_required")
+    @DisplayName("회원가입 실패 - status:400, CODE:AU015")
     void signUp_fail_profileImage_required() throws Exception {
         //given
         String body = """
@@ -406,7 +402,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 - email_required")
+    @DisplayName("로그인 실패 - status:400, CODE:AU011")
     void login_fail_email_required() throws Exception {
         String body = """
         {
@@ -427,7 +423,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 - email_invalid")
+    @DisplayName("로그인 실패 - status:400, CODE:AU010")
     void login_fail_email_invalid() throws Exception {
         String body = """
         {
@@ -447,7 +443,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 - password_required")
+    @DisplayName("로그인 실패 - status:400, CODE:AU012")
     void login_fail_password_required() throws Exception {
         String body = """
         {
@@ -468,7 +464,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("로그인 실패 - password_rule_violation")
+    @DisplayName("로그인 실패 - status:400, CODE:AU016")
     void login_fail_password_rule_violation() throws Exception {
         String body = """
         {
@@ -489,7 +485,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("토큰갱신 실패 - token_missing(no_refreshToken)")
+    @DisplayName("토큰갱신 실패 - status:401, CODE:T002")
     void refresh_fail_no_refreshToken() throws Exception {
 
         Mockito.when(authService.extractRefresh(any()))
