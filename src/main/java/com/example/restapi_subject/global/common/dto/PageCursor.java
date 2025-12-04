@@ -5,5 +5,5 @@ import java.util.List;
 public record PageCursor<T> (
         List<T> content,
         boolean hasNext,
-        Long nextCursor
+        Long nextCursorId
 ) { }

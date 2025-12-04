@@ -1,64 +1,106 @@
 package com.example.restapi_subject.domain.user.repository;
 
 import com.example.restapi_subject.domain.user.domain.User;
+import com.example.restapi_subject.global.common.repository.BaseInMemoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
+
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 
 @Slf4j
 @Repository
-public class InMemoryUserRepository {
-    private final Map<Long, User> store = new ConcurrentHashMap<>();
-    private final AtomicLong sequence = new AtomicLong(0);
+public class InMemoryUserRepository extends BaseInMemoryRepository<User> implements UserRepository {
 
-    public User save(User user) {
-        if (user.getId() == null) user = user.withId(sequence.incrementAndGet());
-        store.put(user.getId(), user);
-        return user;
+    private final Map<String, Long> emailIndex = new ConcurrentHashMap<>();
+    private final Map<String, Long> nicknameIndex = new ConcurrentHashMap<>();
+
+    @Override
+    public User save(User newUser) {
+        User saved = super.save(newUser);
+        updateIndexes(saved);
+        return saved;
     }
 
-    public Optional<User> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
-    }
-
-    public Optional<User> findByEmail(String email) {
-        return store.values().stream()
-                .filter(user -> email.equals(user.getEmail()))
-                .findFirst();
-    }
-
-    public Optional<User> findByNickname(String nickname) {
-        return store.values().stream()
-                .filter(user -> nickname.equals(user.getNickname()))
-                .findFirst();
-    }
-
-    public boolean existsByEmail(String email) {
-        return findByEmail(email).isPresent();
-    }
-
-    public boolean existsByNickname(String nickname) {
-        return findByNickname(nickname).isPresent();
-    }
-
+    @Override
     public Optional<User> update(Long id, UnaryOperator<User> updater) {
-        User after = store.compute(id, (k, cur) ->
-                cur == null ? null : updater.apply(cur)
-        );
-        return Optional.ofNullable(after);
+        User before = findById(id).orElse(null);
+        if (before != null) return Optional.empty();
+
+        String oldEmailKey = norm(before.getEmail());
+        String oldNicknameKey = norm(before.getNickname());
+
+        Optional<User> updatedOpt = super.update(id, updater);
+        updatedOpt.ifPresent(after -> {
+            String newEmailKey = norm(after.getEmail());
+            String newNickKey  = norm(after.getNickname());
+
+            if (!Objects.equals(oldEmailKey, newEmailKey)) {
+                if (oldEmailKey != null) emailIndex.remove(oldEmailKey);
+                if (newEmailKey != null) emailIndex.put(newEmailKey, after.getId());
+            }
+
+            if (!Objects.equals(oldNicknameKey, newNickKey)) {
+                if (oldNicknameKey != null) nicknameIndex.remove(oldNicknameKey);
+                if (newNickKey != null) nicknameIndex.put(newNickKey, after.getId());
+            }
+        });
+        return updatedOpt;
     }
 
+    @Override
+    public Optional<User> findByEmail(String email) {
+        Long id = emailIndex.get(norm(email));
+        if(id == null) return Optional.empty();
+        return findById(id);
+    }
+
+    @Override
+    public Optional<User> findByNickname(String nickname) {
+        Long id = nicknameIndex.get(nickname);
+        if(id == null) return Optional.empty();
+        return findById(id);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return emailIndex.containsKey(norm(email));
+    }
+
+    @Override
+    public boolean existsByNickname(String nickname) {
+        return nicknameIndex.containsKey(nickname);
+    }
+
+    @Override
     public void delete(Long id) {
-        store.remove(id);
+        findById(id).ifPresent(u -> {
+            emailIndex.remove(norm(u.getEmail()));
+            nicknameIndex.remove(norm(u.getNickname()));
+        });
+        super.delete(id);
     }
 
-    // 테스트용
-    public void clear() {
-        store.clear();
-        sequence.set(0);
+    @Override
+    protected Long getId(User user) {
+        return user.getId();
+    }
+
+    @Override
+    protected User assignId(User user, Long id) {
+        return user.withId(id);
+    }
+
+    private void updateIndexes(User user) {
+        emailIndex.put(norm(user.getEmail()), user.getId());
+        nicknameIndex.put(norm(user.getNickname()), user.getId());
+    }
+
+    private String norm(String email) {
+        if(email == null) return null;
+        return email.toLowerCase().trim();
     }
 }
