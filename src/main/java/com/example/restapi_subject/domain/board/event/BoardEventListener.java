@@ -22,27 +22,27 @@ public class BoardEventListener {
      */
     private final BoardRepository boardRepository;
 
-    @Async
-    @EventListener
-    @Transactional
-    public void onCommentEvent(CommentEvent event) {
-        int delta = switch (event.type()) {
-            case CREATED -> 1;
-            case DELETED -> -1;
-        };
-        boardRepository.updateCommentCount(event.boardId(), delta);
-    }
-
-    @Async
-    @EventListener
-    @Transactional
-    public void onBoardLikeEvent(BoardLikeEvent event) {
-        int delta = switch (event.type()) {
-            case CREATED -> 1;
-            case DELETED -> -1;
-        };
-        boardRepository.updateLikeCount(event.boardId(), delta);
-    }
+//    @Async
+//    @EventListener
+//    @Transactional
+//    public void onCommentEvent(CommentEvent event) {
+//        int delta = switch (event.type()) {
+//            case CREATED -> 1;
+//            case DELETED -> -1;
+//        };
+//        boardRepository.updateCommentCount(event.boardId(), delta);
+//    }
+//
+//    @Async
+//    @EventListener
+//    @Transactional
+//    public void onBoardLikeEvent(BoardLikeEvent event) {
+//        int delta = switch (event.type()) {
+//            case CREATED -> 1;
+//            case DELETED -> -1;
+//        };
+//        boardRepository.updateLikeCount(event.boardId(), delta);
+//    }
 
     @Async
     @EventListener
