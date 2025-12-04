@@ -39,7 +39,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         String path = request.getRequestURI();
 
-        if (shouldSkip(path, request.getMethod())) {
+        if (shouldSkip(path, request.getMethod(), request)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -81,13 +81,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean shouldSkip(String path, String method) {
+    private boolean shouldSkip(String path, String method, HttpServletRequest request) {
         for (String prefix : allowUrls) {
             if (path.startsWith(prefix.replace("/**", ""))) return true;
         }
 
-        if ("GET".equalsIgnoreCase(method)) {
-            if (path.startsWith("/api/v1/boards")) return true;
+        if ("GET".equalsIgnoreCase(method) && path.startsWith("/api/v1/boards")) {
+            String authorization = request.getHeader("Authorization");
+            return (authorization == null || authorization.isBlank());
         }
         return false;
     }
