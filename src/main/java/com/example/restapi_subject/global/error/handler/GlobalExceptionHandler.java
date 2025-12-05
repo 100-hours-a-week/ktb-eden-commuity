@@ -7,7 +7,6 @@ import com.example.restapi_subject.global.util.ResponseUtil;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,13 +25,16 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .map(org.springframework.validation.FieldError::getDefaultMessage)
                 .orElse("validation_error");
-        return ResponseUtil.error(HttpStatus.BAD_REQUEST, message);
+
+        ExceptionType type = mapValidationError(message);
+
+        return ResponseUtil.error(type);
     }
 
     // JSON 파싱 실패 등
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotReadable(HttpMessageNotReadableException ex) {
-        return ResponseUtil.error(HttpStatus.BAD_REQUEST, ExceptionType.INVALID_JSON.getErrorMessage());
+        return ResponseUtil.error(ExceptionType.INVALID_JSON);
     }
 
     // DB 무결성 제약 위반 (ex: UNIQUE, FK 등)
@@ -47,7 +49,7 @@ public class GlobalExceptionHandler {
         }
 
         // 그 외 제약 조건 위반 (ex: FK 에러 등)
-        return ResponseUtil.error(HttpStatus.CONFLICT, ExceptionType.SERVER_ERROR.getErrorMessage());
+        return ResponseUtil.error(ExceptionType.SERVER_ERROR);
     }
 
     // 커스텀 비즈니스 예외
@@ -60,6 +62,29 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleAny(Exception ex) {
         log.error("Unexpected", ex);
-        return ResponseUtil.error(HttpStatus.INTERNAL_SERVER_ERROR, ExceptionType.SERVER_ERROR.getErrorMessage());
+        return ResponseUtil.error(ExceptionType.SERVER_ERROR);
+    }
+
+    private ExceptionType mapValidationError(String msg) {
+        return switch (msg) {
+            case "email_required" -> ExceptionType.EMAIL_REQUIRED;
+            case "email_invalid" -> ExceptionType.INVALID_EMAIL_FORMAT;
+
+            case "password_required" -> ExceptionType.PASSWORD_REQUIRED;
+            case "password_rule_violation" -> ExceptionType.PASSWORD_RULE_VIOLATION;
+
+            case "passwordConfirm_required" -> ExceptionType.PASSWORD_CONFIRM_REQUIRED;
+
+            case "nickname_required" -> ExceptionType.NICKNAME_REQUIRED;
+            case "nickname_no_space" -> ExceptionType.NICKNAME_RULE_VIOLATION;
+            case "nickname_max_10" -> ExceptionType.NICKNAME_MAX;
+
+            case "profileImage_required" -> ExceptionType.PROFILE_IMAGE_REQUIRED;
+
+            case "new_password_required" -> ExceptionType.PASSWORD_REQUIRED;
+            case "new_password_confirm_required" -> ExceptionType.PASSWORD_CONFIRM_REQUIRED;
+
+            default -> ExceptionType.SERVER_ERROR;
+        };
     }
 }

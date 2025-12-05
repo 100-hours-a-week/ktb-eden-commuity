@@ -2,6 +2,8 @@ package com.example.restapi_subject.domain.board.repository.impl;
 
 import com.example.restapi_subject.domain.board.domain.Board;
 import com.example.restapi_subject.domain.board.repository.BoardRepository;
+import com.example.restapi_subject.global.error.exception.CustomException;
+import com.example.restapi_subject.global.error.exception.ExceptionType;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 import java.util.*;
@@ -44,6 +46,40 @@ public class InMemoryBoardRepositoryImpl implements BoardRepository {
                 .limit(size + 1L)
                 .toList();
     }
+
+    @Override
+    public Board findBoardWithDetailOrThrow(Long boardId) {
+        Board board = store.get(boardId);
+        if (board == null) throw new CustomException(ExceptionType.BOARD_NOT_FOUND);
+        return board;
+    }
+
+    @Override
+    public Board findByIdOrThrow(Long boardId) {
+        Board board = store.get(boardId);
+        if (board == null) throw new CustomException(ExceptionType.BOARD_NOT_FOUND);
+        return board;
+    }
+
+
+    @Override
+    public List<Board> findPage(Long cursorId, int limit) {
+        if (limit <= 0) limit = 10;
+
+        NavigableMap<Long, Board> targetMap;
+
+        if (cursorId == null) {
+            targetMap = store.descendingMap();
+        }
+        else {
+            targetMap = store.headMap(cursorId, false).descendingMap();
+        }
+
+        return targetMap.values().stream()
+                .limit(limit + 1L)
+                .toList();
+    }
+
 
     @Override
     public Board save(Board board) {

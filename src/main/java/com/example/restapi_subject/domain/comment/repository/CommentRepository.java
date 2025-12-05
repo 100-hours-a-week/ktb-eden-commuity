@@ -16,4 +16,5 @@ public interface CommentRepository {
     void softDeleteById(Long commentId);
     void softDeleteByUserId(Long userId);
     Page<Comment> findByBoardId(Long boardId, Pageable pageable);
+    Page<Comment> findWithAuthor(Long boardId, Pageable pageable);
 }

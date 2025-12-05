@@ -1,6 +1,7 @@
 package com.example.restapi_subject.domain.board.infra;
 
 import com.example.restapi_subject.domain.board.domain.Board;
+import com.example.restapi_subject.domain.comment.infra.CommentEntity;
 import com.example.restapi_subject.domain.user.infra.UserEntity;
 import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
 import jakarta.persistence.*;
@@ -8,6 +9,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "board")
@@ -27,7 +31,7 @@ public class BoardEntity extends JpaBaseEntity {
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "LONGTEXT", nullable = false)
     private String content;
 
     private String image;
@@ -40,6 +44,9 @@ public class BoardEntity extends JpaBaseEntity {
 
     @Column(nullable = false)
     private int commentCount = 0;
+
+    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY)
+    private List<CommentEntity> comments = new ArrayList<>();
 
     private boolean deleted = false;
 

@@ -78,4 +78,10 @@ public class JpaCommentRepositoryImpl implements CommentRepository {
         return commentJpaRepository.findByBoardId(boardId, pageable)
                 .map(CommentEntity::toDomain);
     }
+
+    @Override
+    public Page<Comment> findWithAuthor(Long boardId, Pageable pageable) {
+        return commentJpaRepository.findWithAuthor(boardId, pageable)
+                .map(CommentEntity::toDomainWithAuthor);
+    }
 }

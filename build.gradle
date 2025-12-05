@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -14,6 +15,10 @@ java {
 	}
 }
 
+jacoco {
+    toolVersion = "0.8.10"
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
@@ -24,13 +29,17 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+    set('bootVer', "3.3.5")
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // 비밀번호 암호화를 위해 SECURITY 일부분만..
-    implementation 'org.springframework.security:spring-security-crypto:6.4.4'
+    implementation "org.springframework.boot:spring-boot-starter-security:${bootVer}"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-client:${bootVer}"
 
     //JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
@@ -49,4 +58,66 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn tasks.test
+    mustRunAfter tasks.test
+
+    reports {
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+
+    classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        '**/dto/**',
+                        '**/*Dto*',
+                        '**/*Request*',
+                        '**/*Response*',
+
+                        '**/domain/**/domain/**',
+                        '**/*Entity*',
+
+                        '**/*Repository*',
+                        '**/repository/**',
+
+                        '**/*Config*',
+                        '**/*Configuration*',
+                        '**/*Properties*',
+
+                        '**/error/**',
+                        '**/*Exception*',
+
+                        '**/util/**',
+                        '**/*Util*',
+
+                        '**/*OpenApi*',
+                        '**/*Swagger*',
+
+
+                        '**/*$*',            // synthetic lambda/internal class
+                        '**/*Lambda*',
+                        '**/*Generated*'
+                ])
+            })
+    )
+    doLast {
+        def xmlFile = file("${buildDir}/reports/jacoco/test/jacocoTestReport.xml")
+
+        if (xmlFile.exists()) {
+            println "Fixing Jacoco XML: ${xmlFile}"
+            xmlFile.text = xmlFile.text.replaceAll(
+                    /<method[^>]*name="lambda[^>]*>[\s\S]*?<\/method>/,
+                    ""
+            )
+        }
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
 }
