@@ -84,9 +84,17 @@ public class JpaBoardRepositoryImpl implements BoardRepository {
     }
 
     @Override
+    public Board findBoardWithDetailOrThrow(Long boardId) {
+        return boardJpaRepository.findBoardWithDetail(boardId)
+                .map(BoardEntity::toDomain)
+                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
+    }
+
+    @Override
     public Board findByIdOrThrow(Long boardId) {
         return boardJpaRepository.findBoardWithDetail(boardId)
-                .map(BoardEntity::toDomainWithComments)
+                .filter(b -> !b.isDeleted())
+                .map(BoardEntity::toDomain)
                 .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
     }
 

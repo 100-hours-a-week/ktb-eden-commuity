@@ -37,8 +37,6 @@ public interface BoardJpaRepository extends JpaRepository<BoardEntity, Long> {
         SELECT DISTINCT b
         FROM BoardEntity b
         JOIN FETCH b.author a
-        LEFT JOIN FETCH b.comments c
-        LEFT JOIN FETCH c.author ca
         WHERE b.id = :boardId
           AND b.deleted = false
     """)

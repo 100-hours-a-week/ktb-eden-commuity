@@ -1,7 +1,6 @@
 package com.example.restapi_subject.domain.board.infra;
 
 import com.example.restapi_subject.domain.board.domain.Board;
-import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.infra.CommentEntity;
 import com.example.restapi_subject.domain.user.infra.UserEntity;
 import com.example.restapi_subject.global.common.entity.JpaBaseEntity;
@@ -98,27 +97,6 @@ public class BoardEntity extends JpaBaseEntity {
                 .commentCount(this.commentCount)
                 .createdDate(this.getCreatedDate())
                 .updatedDate(this.getUpdatedDate())
-                .deleted(this.deleted)
-                .build();
-    }
-
-    public Board toDomainWithComments() {
-        List<Comment> commentDomains = this.comments.stream()
-                .map(CommentEntity::toDomain)
-                .toList();
-
-        return Board.builder()
-                .id(this.id)
-                .authorId(this.author.getId())
-                .title(this.title)
-                .content(this.content)
-                .image(this.image)
-                .viewCount(this.viewCount)
-                .likeCount(this.likeCount)
-                .commentCount(this.commentCount)
-                .createdDate(this.getCreatedDate())
-                .updatedDate(this.getUpdatedDate())
-                .comments(commentDomains)
                 .deleted(this.deleted)
                 .build();
     }

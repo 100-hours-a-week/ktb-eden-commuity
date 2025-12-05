@@ -27,7 +27,7 @@ public class BoardService {
     @Transactional
     public Board getBoardAndIncreaseViewOrThrow(Long boardId) {
         boardRepository.updateViewCount(boardId, 1);
-        return boardRepository.findByIdOrThrow(boardId);
+        return boardRepository.findBoardWithDetailOrThrow(boardId);
     }
 
     public Board getBoardOrThrow(Long boardId) {

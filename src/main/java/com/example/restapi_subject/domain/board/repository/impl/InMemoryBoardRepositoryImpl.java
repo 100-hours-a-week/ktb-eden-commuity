@@ -48,6 +48,13 @@ public class InMemoryBoardRepositoryImpl implements BoardRepository {
     }
 
     @Override
+    public Board findBoardWithDetailOrThrow(Long boardId) {
+        Board board = store.get(boardId);
+        if (board == null) throw new CustomException(ExceptionType.BOARD_NOT_FOUND);
+        return board;
+    }
+
+    @Override
     public Board findByIdOrThrow(Long boardId) {
         Board board = store.get(boardId);
         if (board == null) throw new CustomException(ExceptionType.BOARD_NOT_FOUND);
