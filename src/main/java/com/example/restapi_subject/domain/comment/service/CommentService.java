@@ -9,6 +9,9 @@ import com.example.restapi_subject.domain.comment.repository.CommentRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,18 @@ public class CommentService {
     private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
     private final BoardValidator boardValidator;
+
+    public CommentRes.PageDto<CommentRes.CommentDto> list(Long boardId, int page, int size) {
+        if (page < 0) page = 0;
+        if (size <= 0) size = 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Comment> comments = commentRepository.findWithAuthor(boardId, pageable);
+        List<CommentRes.CommentDto> items = comments.getContent().stream()
+                .map(CommentRes.CommentDto::from)
+                .toList();
+        return new CommentRes.PageDto<>(items, page, size, comments.getTotalPages(), (int)comments.getTotalElements());
+    }
 
     @Transactional
     public CommentRes.CreateIdDto create(Long boardId, Long authorId, CommentReq.CreateDto dto) {

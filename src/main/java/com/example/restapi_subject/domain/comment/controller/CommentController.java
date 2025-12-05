@@ -2,7 +2,6 @@ package com.example.restapi_subject.domain.comment.controller;
 
 import com.example.restapi_subject.domain.comment.dto.CommentReq;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
-import com.example.restapi_subject.domain.comment.service.CommentManagementFacade;
 import com.example.restapi_subject.domain.comment.service.CommentService;
 import com.example.restapi_subject.global.common.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
-    private final CommentManagementFacade commentManagementFacade;
 
     @PostMapping("/comments")
     @Operation(summary = "댓글 생성", description = "토큰(AT)검증후 댓글을 생성합니다.")
@@ -31,7 +29,7 @@ public class CommentController {
     public ApiResponse<CommentRes.PageDto<CommentRes.CommentDto>> list(@PathVariable Long boardId,
                                                                        @RequestParam(defaultValue = "0") int page,
                                                                        @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.ok("comment_list_success", commentManagementFacade.list(boardId, page, size));
+        return ApiResponse.ok("comment_list_success", commentService.list(boardId, page, size));
     }
 
     @PatchMapping("/comments/{commentId}")

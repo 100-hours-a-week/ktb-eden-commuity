@@ -59,6 +59,26 @@ public class InMemoryCommentRepositoryImpl extends BaseInMemoryRepository<Commen
         return new PageImpl<>(content, pageable, filtered.size());
     }
 
+    @Override
+    public Page<Comment> findWithAuthor(Long boardId, Pageable pageable) {
+        Page<Comment> originalPage = findByBoardId(boardId, pageable);
+
+        List<Comment> mapped = originalPage.getContent().stream()
+                .map(c -> Comment.builder()
+                        .id(c.getId())
+                        .boardId(c.getBoardId())
+                        .authorId(c.getAuthorId())
+                        .content(c.getContent())
+                        .createdDate(c.getCreatedDate())
+                        .updateDate(c.getUpdatedDate())
+                        .deleted(c.isDeleted())
+                        .build()
+                )
+                .toList();
+
+        return new PageImpl<>(mapped, pageable, originalPage.getTotalElements());
+    }
+
 
     @Override
     protected Long getId(Comment comment) {
