@@ -355,5 +355,70 @@ Spring Data JPA
 
 + 좋아요/댓글 카운트는 **정합성을 위해 동기 트랜잭션 내 업데이트**로 설계하고, <br />
 이벤트는 추후 **알림, 통계 집계, 로그 적재** 등 비동기 업무에 확장 가능하도록 남겨둠
+------------
+## ✨ API 엔드포인트
+
+### 🔐 Auth API
+
+| Method | Endpoint                | Description                | Auth                 | Response                    |
+|--------|-------------------------|----------------------------|----------------------|-----------------------------|
+| POST   | `/api/v1/auth/signup`   | 회원가입                   | ❌                   | 생성된 사용자 id          |
+| POST   | `/api/v1/auth/login`    | 로그인 및 AT/RT 발급       | ❌                   | AT + RT + 사용자 정보       |
+| POST   | `/api/v1/auth/refresh`  | Access Token, Refresh Token 재발급        | Refresh Token Cookie | 새로운 Access Token, Refresh Token         |
+| POST   | `/api/v1/auth/logout`   | 로그아웃 (RT 제거/무효화)  | ✔                   | 성공 메시지                 |
+
+> 로그인 성공 시 **Access Token은 헤더**, **Refresh Token은 HttpOnly Cookie** 로 전달됩니다.  
+> Refresh Token Rotation 전략을 사용합니다.
+
+---
+
+### 🧑‍💻 User API
+
+| Method | Endpoint              | Description                        | Auth | Response           |
+|--------|-----------------------|------------------------------------|------|--------------------|
+| GET    | `/api/v1/users`    | 내 정보 조회 (토큰 기반)           | ✔    | 내 프로필 정보     |
+| PATCH  | `/api/v1/users`    | 내 프로필 수정 (닉네임/이미지 등) | ✔    | 수정된 프로필 정보 |
+| PATCH  | `/api/v1/users/password`    | 비밀번호 수정 | ✔    | 성공 여부 |
+| DELETE | `/api/v1/users`    | 회원 탈퇴 (Soft Delete 처리)      | ✔    | 성공 여부          |
+
+> 탈퇴 시 이메일/닉네임에 **Prefix를 추가하는 Soft Delete** 적용
+> 
+
+### 📝 Board API
+
+| Method | Endpoint                             | Description                                     | Auth | Response              |
+|--------|-----------------------------------------|-------------------------------------------------|------|-----------------------|
+| GET    | `/api/v1/boards?cursorId={id}&pageSize=10`       | 게시글 목록 조회 (커서 기반), cursorId, pageSize: optional     | ❌   | 게시글 목록           |
+| GET    | `/api/v1/boards/{id}`                | 게시글 상세 조회 & 조회수 증가                  | ❌   | 게시글 상세 정보      |
+| POST   | `/api/v1/boards`                     | 게시글 작성                                     | ✔    | 생성된 게시글 정보    |
+| PATCH  | `/api/v1/boards/{id}`                | 게시글 수정                                     | ✔    | 수정된 게시글 정보    |
+| DELETE | `/api/v1/boards/{id}`                | 게시글 삭제                                     | ✔    | 성공 여부             |
+
+---
+
+### ❤️ Board Likes (좋아요 API)
+
+| Method | Endpoint                          | Description       | Auth | Response |
+|--------|-----------------------------------|-------------------|------|----------|
+| POST   | `/api/v1/boards/{id}/like`       | 좋아요 등록       | ✔    | 게시글 정보, 좋아요 수, 좋아요 여부 |
+| DELETE | `/api/v1/boards/{id}/like`       | 좋아요 취소       | ✔    | 게시글 정보, 좋아요 수, 좋아요 여부 |
+
+> 좋아요는 토글 방식이 아닌 **명령형 분리 (등록/취소 분리)** 로 구현  
+> DB 조회 없이 Repository 직접 업데이트하여 좋아요 카운트 성능 개선
+
+---
+
+### 💬 Comment API
+
+| Method | Endpoint                                      | Description        | Auth | Response             |
+|--------|-----------------------------------------------|--------------------|------|----------------------|
+  | GET    | `/api/v1/boards/{boardId}/comments`                | 댓글 목록 조회(오프셋), page,size : required = false     | ❌   | 댓글 리스트(페이지)          |
+| POST   | `/api/v1/boards/{boardId}/comments`                | 댓글 작성          | ✔    | 생성된 댓글 정보          |
+| PATCH  | `/api/v1/boards/{boardId}/comments/{commentId}`                | 댓글 수정          | ✔    | 수정된 댓글 정보     |
+| DELETE | `/api/v1/boards/{boardId}/comments/{commentId}`                | 댓글 삭제          | ✔    | 성공 여부            |
+
+> 댓글 수정/삭제는 작성자 검증 필요  
+> 게시글 상세 조회 시 댓글 수 포함하여 반환
+
 
 
