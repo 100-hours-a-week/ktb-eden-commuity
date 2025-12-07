@@ -1,6 +1,7 @@
 package com.example.restapi_subject.domain.boardlike.event;
 
 
+import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.boardlike.repository.BoardLikeRepository;
 import com.example.restapi_subject.domain.user.event.UserEvent;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import java.util.List;
 public class BoardLikeEventListener {
 
     private final BoardLikeRepository boardLikeRepository;
+    private final BoardRepository boardRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Async
@@ -31,12 +33,11 @@ public class BoardLikeEventListener {
         Long userId = event.userId();
         List<Long> boardIds = boardLikeRepository.findActiveBoardIdsByUserId(userId);
 
-        if (boardIds.isEmpty()) {
-            return;
-        }
+        if (boardIds.isEmpty()) return;
+        boardLikeRepository.deleteByUserId(userId);
 
         boardIds.forEach(boardId -> {
-            eventPublisher.publishEvent(BoardLikeEvent.deleted(boardId, userId));
+            boardRepository.updateLikeCount(boardId, -1);
         });
     }
 }
