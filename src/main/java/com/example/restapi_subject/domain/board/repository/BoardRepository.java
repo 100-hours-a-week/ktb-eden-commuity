@@ -18,7 +18,9 @@ public interface BoardRepository {
     List<Board> findAll();
 
     List<Board> findAllByCursor(Long cursorId, int size);
-
+    Board findBoardWithDetailOrThrow(Long boardId);
+    Board findByIdOrThrow(Long boardId);
+    List<Board> findPage(Long cursorId, int limit);
     boolean existsById(Long id);
     void updateCommentCount(Long boardId, int delta);
     void updateViewCount(Long boardId, int delta);

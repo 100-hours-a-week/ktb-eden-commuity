@@ -3,6 +3,7 @@ package com.example.restapi_subject.domain.comment.domain;
 import com.example.restapi_subject.global.common.entity.BaseEntity;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
+import jakarta.persistence.Transient;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,6 +19,10 @@ public class Comment extends BaseEntity {
     private Long authorId;
     private String content;
     private boolean deleted;
+
+    @Transient
+    private String authorNickname;
+    private String authorProfileImage;
 
     @Builder
     private Comment(Long id, Long boardId, Long authorId, String content, LocalDateTime createdDate, LocalDateTime updateDate, boolean deleted) {
@@ -61,5 +66,11 @@ public class Comment extends BaseEntity {
     public void changeContent(String content) {
         if (content == null || content.isBlank()) throw new CustomException(ExceptionType.CONTENT_REQUIRED);
         this.content = content; touch();
+    }
+
+    public Comment withAuthorInfo(String nickname, String profileImage) {
+        this.authorNickname = nickname;
+        this.authorProfileImage = profileImage;
+        return this;
     }
 }

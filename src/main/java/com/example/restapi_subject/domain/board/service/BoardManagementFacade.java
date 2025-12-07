@@ -5,7 +5,7 @@ import com.example.restapi_subject.domain.board.dto.BoardRes;
 import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.boardlike.service.BoardLikeService;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
-import com.example.restapi_subject.domain.comment.service.CommentManagementFacade;
+import com.example.restapi_subject.domain.comment.service.CommentService;
 import com.example.restapi_subject.domain.user.dto.UserRes;
 import com.example.restapi_subject.domain.user.service.UserService;
 import com.example.restapi_subject.global.common.dto.PageCursor;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class BoardManagementFacade {
 
     private final BoardService boardService;
-    private final CommentManagementFacade  commentManagementFacade;
+    private final CommentService commentService;
     private final BoardRepository boardRepository;
     private final BoardLikeService boardLikeService;
     private final UserService userService;
@@ -56,14 +56,14 @@ public class BoardManagementFacade {
     @Transactional
     public BoardRes.DetailDto getDetailDto(Long boardId, Long userId, int page, int size) {
         Board board = boardService.getBoardAndIncreaseViewOrThrow(boardId);
-        CommentRes.PageDto<CommentRes.CommentDto> comments = commentManagementFacade.list(boardId, page, size);
+        CommentRes.PageDto<CommentRes.CommentDto> comments = commentService.list(boardId, page, size);
         boolean liked = (userId != null) && boardLikeService.isLiked(boardId, userId);
         UserRes.SimpleProfileDto profile = userService.getProfileByIdOrDeleted(board.getAuthorId());
         return BoardRes.DetailDto.from(board, profile.nickname(), profile.profileImage(), liked, comments);
     }
 
     private PageCursor<Board> listByCursor(Long cursorId, int pageSize) {
-        List<Board> rows = boardRepository.findAllByCursor(cursorId, pageSize);
+        List<Board> rows = boardRepository.findPage(cursorId, pageSize);
 
         boolean hasNext = rows.size() > pageSize;
         if (hasNext) rows = rows.subList(0, pageSize);

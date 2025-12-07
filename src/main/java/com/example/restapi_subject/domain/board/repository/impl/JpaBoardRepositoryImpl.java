@@ -5,6 +5,8 @@ import com.example.restapi_subject.domain.board.infra.BoardEntity;
 import com.example.restapi_subject.domain.board.repository.BoardJpaRepository;
 import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.user.infra.UserEntity;
+import com.example.restapi_subject.global.error.exception.CustomException;
+import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.PageRequest;
@@ -79,6 +81,28 @@ public class JpaBoardRepositoryImpl implements BoardRepository {
                 .stream()
                 .map(BoardEntity::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Board findBoardWithDetailOrThrow(Long boardId) {
+        return boardJpaRepository.findBoardWithDetail(boardId)
+                .map(BoardEntity::toDomain)
+                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
+    }
+
+    @Override
+    public Board findByIdOrThrow(Long boardId) {
+        return boardJpaRepository.findBoardWithDetail(boardId)
+                .filter(b -> !b.isDeleted())
+                .map(BoardEntity::toDomain)
+                .orElseThrow(() -> new CustomException(ExceptionType.BOARD_NOT_FOUND));
+    }
+
+    @Override
+    public List<Board> findPage(Long cursorId, int limit) {
+        return boardJpaRepository.findBoardsWithAuthor(cursorId, limit).stream()
+                .map(BoardEntity::toDomain)
+                .toList();
     }
 
     @Override

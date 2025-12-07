@@ -73,4 +73,17 @@ public class CommentEntity extends JpaBaseEntity {
                 .deleted(this.deleted)
                 .build();
     }
+
+    public Comment toDomainWithAuthor() {
+        return Comment.builder()
+                .id(this.id)
+                .boardId(this.board.getId())
+                .authorId(this.author.getId())
+                .content(this.content)
+                .createdDate(this.getCreatedDate())
+                .updateDate(this.getUpdatedDate())
+                .deleted(this.deleted)
+                .build()
+                .withAuthorInfo(this.author.getNickname(), this.author.getProfileImage());
+    }
 }

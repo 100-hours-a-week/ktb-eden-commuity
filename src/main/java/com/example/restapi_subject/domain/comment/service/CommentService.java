@@ -1,6 +1,6 @@
 package com.example.restapi_subject.domain.comment.service;
 
-import com.example.restapi_subject.domain.comment.event.CommentEvent;
+import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.board.service.BoardValidator;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.dto.CommentReq;
@@ -9,7 +9,9 @@ import com.example.restapi_subject.domain.comment.repository.CommentRepository;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,18 +22,27 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CommentService {
 
-    // TODO : soft delete 고려
-
+    private final BoardRepository boardRepository;
     private final CommentRepository commentRepository;
     private final BoardValidator boardValidator;
-    private final ApplicationEventPublisher eventPublisher;
+
+    public CommentRes.PageDto<CommentRes.CommentDto> list(Long boardId, int page, int size) {
+        if (page < 0) page = 0;
+        if (size <= 0) size = 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Comment> comments = commentRepository.findWithAuthor(boardId, pageable);
+        List<CommentRes.CommentDto> items = comments.getContent().stream()
+                .map(CommentRes.CommentDto::from)
+                .toList();
+        return new CommentRes.PageDto<>(items, page, size, comments.getTotalPages(), (int)comments.getTotalElements());
+    }
 
     @Transactional
     public CommentRes.CreateIdDto create(Long boardId, Long authorId, CommentReq.CreateDto dto) {
         boardValidator.ensureBoardExists(boardId);
         Comment saved = commentRepository.save(Comment.create(boardId, authorId, dto.content()));
-        eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.CREATED));
-
+        boardRepository.updateCommentCount(boardId, +1);
         return CommentRes.CreateIdDto.of(saved.getId());
     }
 
@@ -50,7 +61,7 @@ public class CommentService {
         Comment c = getCommentOrThrow(commentId);
         checkEditableOrThrow(c, boardId, requesterId);
         commentRepository.softDeleteById(commentId);
-        eventPublisher.publishEvent(new CommentEvent(boardId, CommentEvent.Type.DELETED));
+        boardRepository.updateCommentCount(boardId, -1);
     }
 
     /**

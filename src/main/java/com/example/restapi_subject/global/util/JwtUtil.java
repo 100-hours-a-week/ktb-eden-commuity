@@ -2,6 +2,7 @@ package com.example.restapi_subject.global.util;
 
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
@@ -46,28 +47,11 @@ public class JwtUtil {
     }
 
     public String createAccessToken(Long userId) {
-        long now = System.currentTimeMillis();
-        return Jwts.builder()
-                .header().type("JWT").and()
-                .issuer(issuer)
-                .subject(String.valueOf(userId))
-                .issuedAt(new Date(now))
-                .expiration(new Date(now + accessExpMs))
-                .signWith(secretKey, Jwts.SIG.HS256)
-                .compact();
+        return createToken(userId, accessExpMs, false);
     }
 
     public String createRefreshToken(Long userId) {
-        long now = System.currentTimeMillis();
-        return Jwts.builder()
-                .header().type("JWT").and()
-                .issuer(issuer)
-                .subject(String.valueOf(userId))
-                .claim("typ", "refresh")
-                .issuedAt(new Date(now))
-                .expiration(new Date(now + refreshExpMs))
-                .signWith(secretKey, Jwts.SIG.HS256)
-                .compact();
+        return createToken(userId, refreshExpMs, true);
     }
 
     public boolean isValid(String token) {
@@ -91,6 +75,8 @@ public class JwtUtil {
         try {
             String sub = parser.parseSignedClaims(token).getPayload().getSubject();
             return Long.parseLong(sub);
+        } catch (ExpiredJwtException e) {
+            throw e;
         } catch (JwtException | NumberFormatException e) {
             throw new CustomException(ExceptionType.TOKEN_INVALID);
         }
@@ -105,5 +91,27 @@ public class JwtUtil {
         if (authorization == null) return null;
         String prefix = "Bearer ";
         return authorization.startsWith(prefix) ? authorization.substring(prefix.length()).trim() : null;
+    }
+
+    public Long extractUserIdAllowExpired(String token) {
+        try {
+            return getUserId(token);
+        } catch (ExpiredJwtException e) {
+            return Long.valueOf(e.getClaims().getSubject());
+        }
+    }
+
+    private String createToken(Long userId, long expMs, boolean isRefresh) {
+        long now = System.currentTimeMillis();
+
+        return Jwts.builder()
+                .header().type("JWT").and()
+                .issuer(issuer)
+                .subject(String.valueOf(userId))
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + expMs))
+                .claim("typ", isRefresh ? "refresh" : "access")
+                .signWith(secretKey, Jwts.SIG.HS256)
+                .compact();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.restapi_subject.domain.comment.event;
 
+import com.example.restapi_subject.domain.board.repository.BoardRepository;
 import com.example.restapi_subject.domain.comment.domain.Comment;
 import com.example.restapi_subject.domain.comment.repository.CommentRepository;
 import com.example.restapi_subject.domain.user.event.UserEvent;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -19,9 +21,10 @@ import java.util.List;
 @Slf4j
 public class CommentEventListener {
 
-    // TODO : soft Delete + 익명화 -> DTO 에서 매핑?
+    // TODO : 복구 로직
 
     private final CommentRepository commentRepository;
+    private final BoardRepository boardRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     @Async
@@ -33,13 +36,13 @@ public class CommentEventListener {
         Long userId = event.userId();
         List<Comment> targets = commentRepository.findActiveByUserId(userId);
 
-        if (targets.isEmpty()) {
-            return;
-        }
+        if (targets.isEmpty()) return;
         commentRepository.softDeleteByUserId(userId);
 
-        targets.forEach(comment -> {
-            eventPublisher.publishEvent(new CommentEvent(comment.getBoardId(), CommentEvent.Type.DELETED));
-        });
+        targets.stream()
+                .collect(Collectors.groupingBy(Comment::getBoardId))
+                .forEach((boardId, list) -> {
+                    boardRepository.updateCommentCount(boardId, -list.size());
+                });
     }
 }

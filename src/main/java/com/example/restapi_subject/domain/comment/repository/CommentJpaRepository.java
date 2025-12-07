@@ -27,6 +27,16 @@ public interface CommentJpaRepository extends JpaRepository<CommentEntity, Long>
     """)
     Page<CommentEntity> findByBoardId(@Param("boardId") Long boardId, Pageable pageable);
 
+    @Query("""
+        SELECT c
+        FROM CommentEntity c
+        JOIN FETCH c.author
+        WHERE c.board.id = :boardId
+          AND c.deleted = false
+        ORDER BY c.id ASC
+    """)
+    Page<CommentEntity> findWithAuthor(Long boardId, Pageable pageable);
+
 
     @Query("""
         SELECT COUNT(c)
