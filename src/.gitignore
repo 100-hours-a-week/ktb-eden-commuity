@@ -1,37 +1,37 @@
-# --- OS / IDE ---
-**/.DS_Store
-**/.AppleDouble
-**/.LSOverride
-**/Thumbs.db
-**/Desktop.ini
-
-*.iml
-.idea/
-.vscode/
-
-# --- Java / Gradle / Maven ---
-target/
+# === Gradle ===
+.gradle/
 build/
 out/
-.gradle/
-**/*.class
-**/*.log
-**/*.jar
-**/*.war
 
-# --- Android ---
-/local.properties
-/.gradle/
-.cxx/
-.externalNativeBuild/
-captures/
-*.apk
-*.aab
+# === IntelliJ IDEA ===
+.idea/
+*.iml
+*.ipr
+*.iws
+workspace.xml
+misc.xml
+vcs.xml
 
-# --- Node ---
-node_modules/
+# === Logs / Reports ===
+*.log
+*.html
+*.xml
+*.bin
+*.lock
+*.idx
 
-# --- Archives ---
-*.zip
-*.tar
-*.tar.gz
+# === Compiled Classes ===
+*.class
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === Test Outputs ===
+test-output/
+*.uniqueId*
+results.bin
+problems-report.html
+
+# === Local Config ===
+application-local.yml

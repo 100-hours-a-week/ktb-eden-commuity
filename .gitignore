@@ -1,15 +1,37 @@
-# OS
-**/.DS_Store
-**/.DS_STORE
-
-# IDE
-*.iml
-.idea/
-.vscode/
-
-# Gradle/빌드
+# === Gradle ===
 .gradle/
 build/
 out/
-target/
-**/*.class
+
+# === IntelliJ IDEA ===
+.idea/
+*.iml
+*.ipr
+*.iws
+workspace.xml
+misc.xml
+vcs.xml
+
+# === Logs / Reports ===
+*.log
+*.html
+*.xml
+*.bin
+*.lock
+*.idx
+
+# === Compiled Classes ===
+*.class
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === Test Outputs ===
+test-output/
+*.uniqueId*
+results.bin
+problems-report.html
+
+# === Local Config ===
+application-local.yml

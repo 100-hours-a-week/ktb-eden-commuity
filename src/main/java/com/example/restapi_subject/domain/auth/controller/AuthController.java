@@ -7,6 +7,7 @@ import com.example.restapi_subject.global.common.response.ApiResponse;
 import com.example.restapi_subject.global.error.exception.CustomException;
 import com.example.restapi_subject.global.error.exception.ExceptionType;
 import com.example.restapi_subject.global.util.ResponseUtil;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -25,18 +26,21 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
+    @Operation(summary = "회원 가입", description = "AuthReq.SignUpDto 기반으로 회원을 저장합니다.")
     public ResponseEntity<ApiResponse<AuthRes.SignUpDto>> signup(@RequestBody @Valid AuthReq.SignUpDto signUpDto) {
         Long userId = authService.signUp(signUpDto);
         return ResponseUtil.created("register_success", new AuthRes.SignUpDto(userId));
     }
 
     @PostMapping("/login")
+    @Operation(summary = "로그인", description = "AuthReq.LoginDto 기반으로 로그인합니다.")
     public ResponseEntity<ApiResponse<AuthRes.LoginDto>> login(@RequestBody AuthReq.LoginDto loginDto){
         // LoginFilter 로 대체
         return null;
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "로그아웃", description = "토큰(RT)기반으로 로그아웃 합니다.")
     public ApiResponse<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         String rt = authService.extractRefresh(request)
                 .orElseThrow(() -> new CustomException(ExceptionType.TOKEN_MISSING));
@@ -54,6 +58,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "토큰 갱신", description = "토큰(RT)기반으로 새 토큰을 받습니다.")
     public ApiResponse<AuthRes.TokenDto> refresh(HttpServletRequest request, HttpServletResponse response) {
         String rt = authService.extractRefresh(request)
                 .orElseThrow(() -> new CustomException(ExceptionType.TOKEN_MISSING));

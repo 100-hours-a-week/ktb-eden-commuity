@@ -22,7 +22,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private final Set<String> whiteList = Set.of(
-            "/api/v1/auth/"
+            "/api/v1/auth/login",
+            "/api/v1/auth/signup",
+            "/swagger-ui/",
+            "/v3/api-docs/"
     );
 
     /** 공개 GET경로: 게시글 목록/게시글 상세/댓글-목록 **/

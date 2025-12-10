@@ -17,8 +17,8 @@ public record BoardReq(
 
     public record UpdateDto(
             @Size(max = 26, message = "title_max_26")
-            String title,
             String content,
+            String title,
             String image
     ) {}
 }

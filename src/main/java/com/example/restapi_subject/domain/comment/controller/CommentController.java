@@ -4,6 +4,7 @@ import com.example.restapi_subject.domain.comment.dto.CommentReq;
 import com.example.restapi_subject.domain.comment.dto.CommentRes;
 import com.example.restapi_subject.domain.comment.service.CommentService;
 import com.example.restapi_subject.global.common.response.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ public class CommentController {
     private final CommentService commentService;
 
     @PostMapping("/comments")
+    @Operation(summary = "댓글 생성", description = "토큰(AT)검증후 댓글을 생성합니다.")
     public ApiResponse<CommentRes.CreateIdDto> create(@PathVariable Long boardId,
                                     @RequestAttribute("userId") Long userId,
                                     @Valid @RequestBody CommentReq.CreateDto dto) {
@@ -23,6 +25,7 @@ public class CommentController {
     }
 
     @GetMapping("/comments")
+    @Operation(summary = "댓글 조회(오프셋)", description = "댓글을 조회합니다.(비회원도 가능)")
     public ApiResponse<CommentRes.PageDto<CommentRes.CommentDto>> list(@PathVariable Long boardId,
                                                                        @RequestParam(defaultValue = "0") int page,
                                                                        @RequestParam(defaultValue = "10") int size) {
@@ -30,6 +33,7 @@ public class CommentController {
     }
 
     @PatchMapping("/comments/{commentId}")
+    @Operation(summary = "댓글 수정", description = "토큰(AT)검증후 댓글을 수정합니다.")
     public ApiResponse<CommentRes.CommentDto> update(@PathVariable Long boardId,
                                                      @PathVariable Long commentId,
                                                      @RequestAttribute("userId") Long userId,
@@ -38,6 +42,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/comments/{commentId}")
+    @Operation(summary = "댓글 삭제", description = "토큰(AT)검증후 댓글을 삭제합니다.")
     public ApiResponse<Void> delete(@PathVariable Long boardId,
                                     @PathVariable Long commentId,
                                     @RequestAttribute("userId") Long userId) {

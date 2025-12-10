@@ -28,9 +28,9 @@ public record BoardRes() {
                     b.getImage(),
                     b.getCreatedDate(),
                     b.getUpdatedDate(),
-                    b.getViewCount(),
-                    b.getLikeCount(),
-                    b.getCommentCount(),
+                    b.getViewCount().get(),
+                    b.getLikeCount().get(),
+                    b.getCommentCount().get(),
                     likedByMe
             );
         }
@@ -42,14 +42,12 @@ public record BoardRes() {
         }
     }
 
-    public record LikeDto(Long boardId, int likeCount, boolean likedByMe) {
-        public static LikeDto of(Long boardId, int likeCount, boolean likedByMe) {
-            return new LikeDto(boardId, likeCount, likedByMe);
-        }
-    }
-
-    public static record DetailDto(
+    public record DetailDto(
             BoardDto board,
             CommentRes.PageDto<CommentRes.CommentDto> comments
-    ) {}
+    ) {
+        public static DetailDto from(Board board, boolean liked, CommentRes.PageDto<CommentRes.CommentDto> comments) {
+            return new DetailDto(BoardDto.from(board, liked), comments);
+        }
+    }
 }

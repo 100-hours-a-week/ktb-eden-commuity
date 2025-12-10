@@ -2,37 +2,20 @@ package com.example.restapi_subject.domain.board.repository;
 
 import com.example.restapi_subject.domain.board.domain.Board;
 import org.springframework.stereotype.Repository;
-
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.UnaryOperator;
 
 @Repository
-public class InMemoryBoardRepository {
+public class InMemoryBoardRepository implements BoardRepository {
 
-    private final Map<Long, Board> store = new ConcurrentHashMap<>();
-    private final AtomicLong seq = new AtomicLong(0);
-
-    public Board save(Board board) {
-        if (board.getId() == null) board = board.withId(seq.incrementAndGet());
-        store.put(board.getId(), board);
-        return board;
-    }
-
-    public Optional<Board> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
-    }
+    private final NavigableMap<Long, Board> store = new ConcurrentSkipListMap<>();
+    protected final AtomicLong sequence = new AtomicLong(0);
 
     public List<Board> findByAuthorId(Long authorId) {
         return store.values().stream()
                 .filter(b -> Objects.equals(b.getAuthorId(), authorId))
-                .sorted(Comparator.comparing(Board::getId))
-                .toList();
-    }
-
-    public List<Board> findAll() {
-        return store.values().stream()
                 .sorted(Comparator.comparing(Board::getId))
                 .toList();
     }
@@ -47,17 +30,45 @@ public class InMemoryBoardRepository {
                 .toList();
     }
 
+    @Override
     public List<Board> findAllByCursor(Long cursorId, int size) {
         if (size <= 0) size = 10;
+        NavigableMap<Long, Board> result = (cursorId == null)
+                ? store.descendingMap()
+                : store.headMap(cursorId, false).descendingMap();
 
-        return store.values().stream()
-                .sorted(Comparator.comparing(Board::getId).reversed())
-                .filter(b -> cursorId == null || b.getId() < cursorId)
+        return result.values().stream()
                 .limit(size + 1L)
                 .toList();
     }
 
+    @Override
+    public Board save(Board board) {
+        if (board.getId() == null) {
+            long id = sequence.incrementAndGet();
+            board = board.withId(id);
+        }
+        store.put(board.getId(), board);
+        return board;
+    }
 
+    public boolean existsById(Long id) {
+        return store.containsKey(id);
+    }
+
+    @Override
+    public Optional<Board> findById(Long id) {
+        return Optional.ofNullable(store.get(id));
+    }
+
+    @Override
+    public List<Board> findAll() {
+        return store.descendingMap().values()
+                .stream()
+                .toList();
+    }
+
+    @Override
     public Optional<Board> update(Long id, UnaryOperator<Board> updater) {
         Board after = store.compute(id, (k, cur) ->
                 cur == null ? null : updater.apply(cur)
@@ -65,6 +76,14 @@ public class InMemoryBoardRepository {
         return Optional.ofNullable(after);
     }
 
-    public void delete(Long id) { store.remove(id); }
-    public void clear() { store.clear(); seq.set(0); }
+    @Override
+    public void delete(Long id) {
+        store.remove(id);
+    }
+
+    @Override
+    public void clear() {
+        store.clear();
+        sequence.set(0);
+    }
 }

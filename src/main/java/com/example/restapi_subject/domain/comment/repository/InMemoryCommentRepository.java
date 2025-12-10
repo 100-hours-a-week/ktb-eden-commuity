@@ -1,6 +1,7 @@
 package com.example.restapi_subject.domain.comment.repository;
 
 import com.example.restapi_subject.domain.comment.domain.Comment;
+import com.example.restapi_subject.global.common.repository.BaseInMemoryRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -8,19 +9,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
-public class InMemoryCommentRepository {
+public class InMemoryCommentRepository extends BaseInMemoryRepository<Comment> implements CommentRepository {
 
-    private final Map<Long, Comment> store = new ConcurrentHashMap<>();
-    private final AtomicLong seq = new AtomicLong(0);
-
-    public Comment save(Comment c) {
-        if (c.getId() == null) c = c.withId(seq.incrementAndGet());
-        store.put(c.getId(), c);
-        return c;
-    }
-
-    public Optional<Comment> findById(Long id) { return Optional.ofNullable(store.get(id)); }
-
+    @Override
     public List<Comment> findByBoardIdPaged(Long boardId, int page, int size) {
         if (page < 0) page = 0;
         if (size <= 0) size = 10;
@@ -32,11 +23,20 @@ public class InMemoryCommentRepository {
                 .toList();
     }
 
+    @Override
     public int countByBoardId(Long boardId) {
         return (int) store.values().stream()
                 .filter(c -> Objects.equals(c.getBoardId(), boardId))
                 .count();
     }
 
-    public void delete(Long id) { store.remove(id); }
+    @Override
+    protected Long getId(Comment comment) {
+        return comment.getId();
+    }
+
+    @Override
+    protected Comment assignId(Comment comment, Long id) {
+        return comment.withId(id);
+    }
 }
